@@ -139,7 +139,7 @@ def send_email(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
             s.starttls(context=ctx)
             s.login(smtp_user, smtp_password)
             s.send_message(msg)
-    log.info("e-mail: sent to %s via %s:%s", mail_to, host, port)
+    log.info("e-mail: sent via %s:%s (%d recipient(s))", host, port, len([a for a in mail_to.split(",") if a.strip()]))
     return True
 
 

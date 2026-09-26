@@ -22,7 +22,8 @@ def make_deal(**over):
 def test_share_page_has_og_tags_escaping_and_redirect():
     page = share_page(make_deal(), day="2026-09-25", site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg")
     assert '<meta property="og:title" content="Barcelona 16.10–19.10: ok. 1994 zł za 2 osoby">' in page
-    assert "Lot Ryanair z Poznania, bagaż: 10 kg (szacunek)" in page
+    # lot (578 + 236 bagaż) + nocleg 1180 = 1994
+    assert "Lot Ryanair z Poznania z bagażem 10 kg (szacunek): ok. 814 zł + nocleg Hotel &lt;Test&gt; &amp; Co (8,4/10): 1180 zł = ok. 1994 zł za 2 osoby." in page
     assert "Hotel &lt;Test&gt; &amp; Co (8,4/10)" in page          # third-party text is escaped
     assert '<meta property="og:image" content="https://example.com/h.jpg">' in page
     assert 'content="0; url=../../#/d/2026-09-25/poz-bcn-20261016-20261019"' in page
@@ -73,7 +74,7 @@ def test_ntfy_payload(monkeypatch):
     d = make_deal(share_path="d/2026-09-25/poz-bcn-20261016-20261019.html")
     assert notify.push_ntfy([d], topic="wypad-abc", site_url="https://u.github.io/wypad", bag="cabin10", date_label="25.09")
     assert sent["url"] == "https://ntfy.sh/wypad-abc"
-    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: ok. 1994 zł za 2 os."
+    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: lot ok. 814 zł + nocleg 1180 zł = ok. 1994 zł za 2 os."
     assert sent["headers"]["Click"] == "https://u.github.io/wypad/d/2026-09-25/poz-bcn-20261016-20261019.html"
     assert sent["headers"]["Title"].decode() == "Wypad 25.09: Barcelona za ok. 1994 zł"
 
@@ -152,3 +153,18 @@ def test_index_og_tags_become_absolute_on_github(tmp_path):
 def test_exact_price_without_estimated_bag_has_no_ok_prefix():
     d = make_deal()
     assert notify.price_text(d, "small") == "1758 zł" and notify.price_text(d, "cabin10") == "ok. 1994 zł"
+
+
+def test_breakdown_adds_up_to_the_published_total():
+    d = make_deal()
+    for bag in ("cabin10", "small"):
+        flight, stay, total = notify.breakdown(d, bag)
+        assert flight + stay == total == d["totals"][bag]
+    assert notify.equation(d, "small") == "lot 578 zł + nocleg 1180 zł = 1758 zł"
+
+
+def test_email_shows_flight_plus_stay_equals_total():
+    page = notify.email_html([make_deal()], site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg", date_label="25.09")
+    assert "Lot Ryanair z bagażem 10 kg (szacunek): ok. 814 zł" in page
+    assert "+ nocleg Hotel &lt;Test&gt; &amp; Co (8,4/10): 1180 zł" in page
+    assert "= <b>ok. 1994 zł</b> za 2 osoby" in page

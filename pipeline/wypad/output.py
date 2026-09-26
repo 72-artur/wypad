@@ -48,8 +48,11 @@ def share_page(deal: dict, *, day: str, site_url: str, bag: str, bag_label: str)
     rating = f" ({stay['rating']:.1f}/10)".replace(".", ",") if stay.get("rating") else ""
     origin = deal["flight"]["out"]["from"]
     origin_gen = ORIGINS.get(origin, {}).get("city_gen") or origin
-    desc = (f"Lot {deal['flight']['carrier']} z {origin_gen}, bagaż: {bag_label}{' (szacunek)' if est else ''}, "
-            f"nocleg: {stay.get('name', '—')}{rating}. Lot, bagaż i nocleg w jednej cenie.")
+    flight = round(deal["flight"]["fare_total"] + ((deal["flight"].get("bags") or {}).get(bag) or {}).get("total", 0))
+    ok = "ok. " if est else ""
+    desc = (f"Lot {deal['flight']['carrier']} z {origin_gen} z bagażem {bag_label}{' (szacunek)' if est else ''}: {ok}{_pln(flight)} "
+            f"+ nocleg {stay.get('name', '—')}{rating}: {_pln(stay.get('price_total', 0))} "
+            f"= {ok}{_pln(deal['totals'][bag])} za 2 osoby.")
     image = stay.get("image") if str(stay.get("image", "")).startswith("https://") else (f"{site_url}/icons/og-default.png" if site_url else "")
     url = f"{site_url}/{share_path(day, deal['id'])}" if site_url else ""
     e = html.escape

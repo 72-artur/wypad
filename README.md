@@ -4,6 +4,7 @@ Codziennie rano automat szuka tanich city breaków z Poznania i okolic: lot w ob
 
 - **Aplikacja:** `site/`. Statyczna strona (HTML/CSS/JS, bez budowania), hostowana za darmo na GitHub Pages.
 - **Wyszukiwanie:** `pipeline/`. Python, uruchamiany raz dziennie przez GitHub Actions (`.github/workflows/daily.yml`).
+- **Publikacja zmian w wyglądzie:** każda zmiana w `site/` (poza danymi) trafia na stronę w ~1 minutę (`.github/workflows/deploy.yml`).
 - **Research źródeł i decyzje:** `docs/RESEARCH.md`. **Wymagania:** `docs/WYMAGANIA.md`.
 
 Koszt: 0 zł. Źródła danych (Ryanair, trivago, Open-Meteo) nie wymagają kluczy API.

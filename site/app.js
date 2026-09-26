@@ -266,6 +266,28 @@ function thumbHTML(deal, cls = 'thumb') {
 }
 function isSaved(id) { return state.saved.some((s) => s.deal.id === id); }
 
+/* Lot + nocleg = razem. Computed from the same numbers, so the equation always adds up. */
+function priceParts(deal, bagKey) {
+  const bag = deal.flight.bags?.[bagKey] || {};
+  const flight = deal.flight.fare_total + (bag.total || 0);
+  const stay = deal.stay?.price_total || 0;
+  return { flight, stay, total: flight + stay, est: Boolean(bag.estimated) };
+}
+const approx = (v, est) => `${est ? '<small class="approx">ok.</small>' : ''}${pln(v)}`;
+function sumHTML(deal, bagKey, cls = '') {
+  const p = priceParts(deal, bagKey);
+  const about = p.est ? 'około ' : '';
+  const aria = `Lot ${about}${pln(p.flight)} plus nocleg ${pln(p.stay)} równa się ${about}${pln(p.total)} za 2 osoby`;
+  return `
+  <div class="eq ${cls}" role="group" aria-label="${esc(aria)}">
+    <div class="eq-part"><span class="eq-label">Lot</span><span class="eq-val num">${approx(p.flight, p.est)}</span><span class="eq-note">${esc(bagPhrase(bagKey))}${p.est ? ' (szac.)' : ''}</span></div>
+    <span class="eq-op" aria-hidden="true">+</span>
+    <div class="eq-part"><span class="eq-label">Nocleg</span><span class="eq-val num">${pln(p.stay)}</span><span class="eq-note">${deal.stay ? nightsLabel(deal.stay.nights) : ''}</span></div>
+    <span class="eq-op" aria-hidden="true">=</span>
+    <div class="eq-part eq-total"><span class="eq-label">Razem · 2 os.</span><span class="eq-big num">${approx(p.total, p.est)}</span><span class="eq-note num">${pln(p.total / 2)}/os.</span></div>
+  </div>`;
+}
+
 function ticketHTML(deal, i, opts = {}) {
   const f = state.filters;
   const out = deal.flight.out, back = deal.flight.back;
@@ -297,10 +319,7 @@ function ticketHTML(deal, i, opts = {}) {
           </div>
         </div>
       </div>` : ''}
-      <div class="t-total">
-        <div class="t-price num">${pln(total(deal, f.bag))}</div>
-        <div class="t-price-note"><b>za 2 osoby</b> · ${pln(total(deal, f.bag) / 2)}/os.<br>loty + ${esc(bagPhrase(f.bag))}${deal.flight.bags?.[f.bag]?.estimated ? ' (szac.)' : ''} + nocleg</div>
-      </div>
+      <div class="t-total">${sumHTML(deal, f.bag)}</div>
     </a>
     <button class="t-save" type="button" data-action="save" data-id="${esc(deal.id)}" data-date="${esc(opts.date || state.data.date)}" aria-pressed="${isSaved(deal.id)}" aria-label="${isSaved(deal.id) ? 'Usuń z zapisanych' : 'Zapisz'}: ${esc(deal.city.name)}">${icon('heart')}</button>
   </article>`;
@@ -475,10 +494,8 @@ async function renderDeal(date, id) {
     ${stay ? stayHTML(deal, bookStay) : ''}
 
     <section class="total-card" aria-labelledby="h-total">
-      <div class="total-top">
-        <div><div class="total-label" id="h-total">Razem za 2 osoby</div><div class="total-price num">${pln(total(deal, bagKey))}</div></div>
-        <div class="total-pp num">${pln(total(deal, bagKey) / 2)}<br>na osobę</div>
-      </div>
+      <h2 class="total-label" id="h-total">Cena całkowita za 2 osoby</h2>
+      ${sumHTML(deal, bagKey, 'eq-dark')}
       <ul class="lines num">
         <li><span>Loty w obie strony</span><span>${pln(deal.flight.fare_total)}</span></li>
         <li><span>Bagaż: ${esc(bags[bagKey]?.short || '')}${bagInfo.estimated ? ' (szacunek)' : ''}</span><span>${bagInfo.estimated ? '~' : ''}${pln(bagInfo.total || 0)}</span></li>
@@ -713,9 +730,9 @@ function shareText(deal) {
   const estimated = deal.flight.bags?.[bagKey]?.estimated;
   const lines = [
     `${deal.city.name}, ${rangeLabel(deal.trip.out_date, deal.trip.back_date)} (${nightsLabel(deal.trip.nights)})`,
-    `Lot ${deal.flight.carrier} z ${origin?.city_gen || deal.flight.out.from}, ${bagPhrase(bagKey)}${estimated ? ' (szacunek)' : ''}`,
-    s ? `Nocleg: ${s.name}${s.rating ? ` (${fmtRating(s.rating)}/10)` : ''}` : '',
-    `Razem ${estimated ? 'ok. ' : ''}${pln(total(deal, bagKey))} za 2 osoby`,
+    `Lot ${deal.flight.carrier} z ${origin?.city_gen || deal.flight.out.from}, ${bagPhrase(bagKey)}${estimated ? ' (szacunek)' : ''}: ${estimated ? 'ok. ' : ''}${pln(priceParts(deal, bagKey).flight)}`,
+    s ? `+ nocleg ${s.name}${s.rating ? ` (${fmtRating(s.rating)}/10)` : ''}: ${pln(s.price_total)}` : '',
+    `= ${estimated ? 'ok. ' : ''}${pln(priceParts(deal, bagKey).total)} za 2 osoby`,
     'Co myślisz?',
   ];
   return lines.filter(Boolean).join('\n');

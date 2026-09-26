@@ -23,6 +23,7 @@ BAG_OPTIONS: dict[str, dict] = {
 @dataclass
 class Settings:
     origins: tuple[str, ...] = tuple(ORIGINS)
+    carriers: tuple[str, ...] = ("FR", "W6")   # Ryanair (required), Wizz Air (best effort)
     nights: tuple[int, ...] = (2, 3, 4)
     horizon_days: int = 56          # 8 weeks ahead
     min_lead_days: int = 1          # earliest departure: tomorrow

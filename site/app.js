@@ -65,6 +65,7 @@ const dayShort = (s) => { const d = parseDay(s); return `${DAYS[d.getUTCDay()]} 
 const dayLong = (s) => { const d = parseDay(s); return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS_GEN[d.getUTCMonth()]}`; };
 const ddmm = (s) => `${s.slice(8, 10)}.${s.slice(5, 7)}`;
 const hhmm = (s) => (s && s.length >= 16 ? s.slice(11, 16) : '');
+const arrTime = (leg) => `${leg.arr_estimated ? '~' : ''}${hhmm(leg.arr)}`;   // Wizz Air: arrival estimated
 const daysBetween = (a, b) => Math.round((parseDay(b) - parseDay(a)) / 86400000);
 
 function rangeLabel(out, back) {
@@ -304,7 +305,7 @@ function ticketHTML(deal, i, opts = {}) {
           <div class="t-apt t-apt-to"><b>${esc(out.to)}</b><span>${esc(deal.city.name)}${deal.city.via ? ` (${esc(deal.city.via)})` : ''}</span></div>
         </div>
         <div class="t-when"><span>${esc(dayShort(deal.trip.out_date))} → ${esc(dayShort(deal.trip.back_date))}</span><span class="nights">${nightsLabel(deal.trip.nights)}</span></div>
-        <div class="t-times num">${hhmm(out.dep)}–${hhmm(out.arr)} · powrót ${hhmm(back.dep)}–${hhmm(back.arr)} · ${esc(deal.flight.carrier)}</div>
+        <div class="t-times num">${hhmm(out.dep)}–${arrTime(out)} · powrót ${hhmm(back.dep)}–${arrTime(back)} · ${esc(deal.flight.carrier)}</div>
       </div>
       <div class="t-perf" aria-hidden="true"></div>
       ${stay ? `
@@ -453,7 +454,7 @@ async function renderDeal(date, id) {
       <div class="d-labels">${labelsHTML(deal)}</div>
       ${archived ? `<p class="notice archived">${icon('clock')}<span>${replaced ? 'Tę propozycję zastąpiło nowsze wyszukiwanie' : `Propozycja z ${esc(dayLong(dealDate))}`}. Ceny mogły się zmienić, sprawdź je przed zakupem.</span></p>` : ''}
       <dl class="facts">
-        <div class="fact"><dt>Na miejscu</dt><dd class="num">${esc(durationLabel(deal.trip.on_ground_h))}<small>od lądowania do odlotu</small></dd></div>
+        <div class="fact"><dt>Na miejscu</dt><dd class="num">${deal.trip.on_ground_estimated ? '~' : ''}${esc(durationLabel(deal.trip.on_ground_h))}<small>od lądowania do odlotu${deal.trip.on_ground_estimated ? ' (szacunkowo)' : ''}</small></dd></div>
         <div class="fact"><dt>Wylot</dt><dd>${esc(untilLabel(days))}<small>${esc(dayLong(deal.trip.out_date))}</small></dd></div>
         <div class="fact"><dt>Pogoda</dt><dd class="num">${w ? `${Math.round(w.t_max)}°C` : '—'}<small>${w ? esc(w.text || (w.kind === 'forecast' ? 'prognoza' : 'średnio o tej porze')) : 'brak prognozy'}</small></dd></div>
       </dl>
@@ -488,6 +489,7 @@ async function renderDeal(date, id) {
           ${compare ? `<a class="btn btn-ghost btn-block" href="${esc(compare)}" target="_blank" rel="noopener">Porównaj w Google Flights</a>` : ''}
         </div>
         <p class="fineprint">Link otwiera wyszukiwarkę przewoźnika z tymi datami, lotniskami i 2 dorosłymi. Bagaż dodajesz w trakcie rezerwacji.</p>
+        ${deal.flight.two_seats_confirmed === false ? `<p class="fineprint">${esc(deal.flight.carrier)} podaje w rozkładzie cenę za osobę, więc cena lotu to 2 × cena z rozkładu i nie ma gwarancji, że w tej taryfie zostały 2 miejsca. Godziny przylotu (~) są szacunkowe. Przy zakupie sprawdź, czy przewoźnik nie dolicza opłaty administracyjnej.</p>` : ''}
       </div>
     </section>
 
@@ -523,7 +525,7 @@ function legHTML(kicker, leg) {
     <div class="leg-kicker"><span>${kicker} · ${esc(dayShort(leg.dep))}</span>${seats}</div>
     <div class="leg-end"><b class="num">${hhmm(leg.dep)}</b><span>${esc(leg.from)} ${esc(leg.from_name || '')}</span></div>
     <div class="leg-mid">${icon('plane')}${esc(leg.no || '')}${leg.duration_min ? `<br>${Math.floor(leg.duration_min / 60)} h ${leg.duration_min % 60} min` : ''}</div>
-    <div class="leg-end to"><b class="num">${hhmm(leg.arr)}</b><span>${esc(leg.to)} ${esc(leg.to_name || '')}</span></div>
+    <div class="leg-end to"><b class="num">${arrTime(leg)}</b><span>${esc(leg.to)} ${esc(leg.to_name || '')}</span></div>
   </div>`;
 }
 function stayHTML(deal, bookStay) {
@@ -594,7 +596,7 @@ function renderInfo() {
   main.innerHTML = `
   <div class="prose">
     <h1>Jak to działa</h1>
-    <p>Codziennie rano automat przeszukuje tanie loty w obie strony z <b>Poznania</b> i pobliskich lotnisk (Wrocław, Bydgoszcz, Szczecin, Łódź) do miast, które nadają się na city break. Szuka wyjazdów na <b>2–4 noce</b> w ciągu najbliższych <b>8 tygodni</b>.</p>
+    <p>Codziennie rano automat przeszukuje tanie loty <b>Ryanair i Wizz Air</b> w obie strony z <b>Poznania</b> i pobliskich lotnisk (Wrocław, Bydgoszcz, Szczecin, Łódź) do miast, które nadają się na city break. Szuka wyjazdów na <b>2–4 noce</b> w ciągu najbliższych <b>8 tygodni</b>.</p>
     <p>Do najlepszych połączeń dobiera nocleg na <b>dokładnie te same daty dla 2 dorosłych</b>: hotel co najmniej 2★ albo apartament (bez hosteli), z oceną gości co najmniej 8/10, zwykle do 3 km od centrum (jeśli tak blisko nic nie spełnia kryteriów, do 5 km). Odległość zawsze widać przy ofercie. Z tych obiektów wybiera najtańszy.</p>
     <h2>Co jest w cenie</h2>
     <ul>

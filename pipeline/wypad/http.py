@@ -27,20 +27,33 @@ class Http:
             time.sleep(self.delay_s - gap)
         self._last = time.monotonic()
 
-    def get_json(self, url: str, params: dict | None = None, **kw):
+    def _request(self, method: str, url: str, parse, **kw):
         last_err: Exception | None = None
+        timeout = kw.pop("timeout", 30)
         for attempt in range(self.retries):
             self._wait()
             self.calls += 1
             try:
-                r = self.s.get(url, params=params, timeout=kw.pop("timeout", 30), **kw)
+                r = self.s.request(method, url, timeout=timeout, **kw)
                 if r.status_code in (429, 500, 502, 503, 504):
                     raise requests.HTTPError(f"HTTP {r.status_code}", response=r)
                 r.raise_for_status()
-                return r.json()
+                return parse(r)
             except (requests.RequestException, ValueError) as e:
                 last_err = e
+                status = getattr(getattr(e, "response", None), "status_code", None)
+                if status is not None and 400 <= status < 500 and status != 429:
+                    break                      # a client error will not fix itself on retry
                 backoff = 2 ** attempt * 3
-                log.info("GET %s failed (%s), retry in %ss", url, e, backoff)
+                log.info("%s %s failed (%s), retry in %ss", method, url, e, backoff)
                 time.sleep(backoff)
-        raise RuntimeError(f"GET {url} failed after {self.retries} attempts: {last_err}")
+        raise RuntimeError(f"{method} {url} failed after {self.retries} attempts: {last_err}")
+
+    def get_json(self, url: str, params: dict | None = None, **kw):
+        return self._request("GET", url, lambda r: r.json(), params=params, **kw)
+
+    def get_text(self, url: str, **kw) -> str:
+        return self._request("GET", url, lambda r: r.text, **kw)
+
+    def post_json(self, url: str, body: dict, headers: dict | None = None, **kw):
+        return self._request("POST", url, lambda r: r.json(), json=body, headers=headers, **kw)

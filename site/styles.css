@@ -367,6 +367,7 @@ main { outline: none; }
 
 .lines { margin: 16px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line-2); }
 .lines li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 15px; }
+.lines li span:last-child { white-space: nowrap; }
 .lines li span:first-child { color: var(--ink-2); }
 .lines li.sum { font-weight: 800; border-bottom: 0; }
 .lines li.sum span:first-child { color: var(--ink); }

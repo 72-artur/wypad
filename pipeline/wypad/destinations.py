@@ -97,6 +97,9 @@ CITIES: dict[str, tuple] = {
     "bukareszt": ("Bukareszt", "Rumunia", "RO", 44.4350, 26.1000, 280, "Pałac Parlamentu i stare miasto Lipscani."),
     "malta": ("Malta", "Malta", "MT", 35.8980, 14.5130, 400, "Valletta, Mdina i morze nawet w listopadzie."),
     "stambul": ("Stambuł", "Turcja", "TR", 41.0060, 28.9760, 350, "Hagia Sophia, bazary i Bosfor."),
+    "dortmund": ("Dortmund", "Niemcy", "DE", 51.5136, 7.4653, 380, "Signal Iduna Park, muzeum futbolu i Zagłębie Ruhry."),
+    "kiszyniow": ("Kiszyniów", "Mołdawia", "MD", 47.0105, 28.8638, 220, "Piwnice winne Cricova i Mileștii Mici, a do tego tanio."),
+    "ochryda": ("Ochryda", "Macedonia Północna", "MK", 41.1172, 20.8016, 250, "Stare miasto nad Jeziorem Ochrydzkim, cerkwie nad wodą."),
 }
 
 # IATA: (city key, via-airport label or None, transfer note)
@@ -201,6 +204,10 @@ AIRPORTS: dict[str, tuple] = {
     "TIA": ("tirana", None, "Autobus, ok. 30 min do centrum."),
     "SOF": ("sofia", None, "Metro, ok. 25 min do centrum."),
     "OTP": ("bukareszt", None, "Autobus ekspresowy lub pociąg, ok. 45 min."),
+    "BBU": ("bukareszt", "Băneasa", "Autobus, ok. 30 min do centrum."),
+    "DTM": ("dortmund", None, "Autobus AirportExpress do dworca, ok. 25 min."),
+    "RMO": ("kiszyniow", None, "Autobus lub trolejbus, ok. 30 min do centrum."),
+    "OHD": ("ochryda", None, "Taksówka, ok. 15 min do starego miasta."),
     "MLA": ("malta", None, "Autobus X4, ok. 25 min do Valletty."),
     "IST": ("stambul", None, "Metro M11 lub autobus Havaist, ok. 1 h 15 min."),
     "SAW": ("stambul", "Sabiha Gökçen", "Autobus Havabus, ok. 1 h 15 min."),

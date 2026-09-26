@@ -27,3 +27,16 @@ def test_nbp_rate_and_fallback():
     rate, label = eur_pln(FakeHttp({"rates": [{"mid": 4.2711, "effectiveDate": "2026-09-25"}]}))
     assert rate == 4.2711 and label == "kurs NBP z 2026-09-25"
     assert eur_pln(FakeHttp(fail=True)) == (FALLBACK_EUR_PLN, "kurs przybliżony")
+
+
+def test_wizz_uses_its_own_fee_table_and_peak_season():
+    est = estimator(4.25, "kurs NBP")
+    low = est({"carrier_code": "W6", "out_dep": "2026-11-02T10:00", "back_dep": "2026-11-06T12:00"})
+    # WIZZ Priority (13 + 57.50) / 2 = 35.25 € → 150 zł per person per flight
+    assert low["cabin10"]["per_unit"] == 150 and low["cabin10"]["total"] == 600
+    # 20 kg outside the peak: (0 + 112.50) / 2 = 56.25 € → 239 zł per flight
+    assert low["checked20"]["per_unit"] == 239 and "Wizz Air" in low["checked20"]["basis"]
+    peak = est({"carrier_code": "W6", "out_dep": "2026-12-20T10:00", "back_dep": "2026-12-23T12:00"})
+    assert peak["checked20"]["per_unit"] == round(62 * 4.25) and "szczycie" in peak["checked20"]["basis"]
+    ryanair = est({"carrier_code": "FR", "out_dep": "2026-12-20T10:00", "back_dep": "2026-12-23T12:00"})
+    assert ryanair["cabin10"]["per_unit"] == 103 and "Ryanair" in ryanair["cabin10"]["basis"]

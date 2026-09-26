@@ -7,13 +7,13 @@ Codziennie rano automat szuka tanich city breaków z Poznania i okolic: lot w ob
 - **Publikacja zmian w wyglądzie:** każda zmiana w `site/` (poza danymi) trafia na stronę w ~1 minutę (`.github/workflows/deploy.yml`).
 - **Research źródeł i decyzje:** `docs/RESEARCH.md`. **Wymagania:** `docs/WYMAGANIA.md`.
 
-Koszt: 0 zł. Źródła danych (Ryanair, trivago, Open-Meteo) nie wymagają kluczy API.
+Koszt: 0 zł. Źródła danych (Ryanair, Wizz Air, trivago, Open-Meteo, NBP) nie wymagają kluczy API.
 
 ## Jak to działa
 
 ```
 06:23  GitHub Actions (cron; zapasowy termin 08:53; zimą 05:23 i 07:53)
-   │   1. Ryanair: trasy z POZ, WRO, BZG, SZZ, LCJ → wszystkie terminy 2–4 noce w ciągu 8 tygodni
+   │   1. Ryanair i Wizz Air: trasy z POZ, WRO, BZG, SZZ, LCJ → wszystkie terminy 2–4 noce w ciągu 8 tygodni
    │   2. wybór ~18 najlepszych kandydatów (cena/noc/os., zniżka vs typowa cena trasy, czas na miejscu, POZ)
    │   3. trivago: nocleg na dokładnie te daty dla 2 dorosłych (ocena ≥ 8, zwykle ≤ 3 km od centrum, bez hosteli)
    │   4. bagaż: szacunek z oficjalnego cennika Ryanair × kurs EUR z NBP; pogoda: Open-Meteo
@@ -74,7 +74,7 @@ cd ../site && python3 -m http.server 8765                       # podgląd: http
 
 ## Ograniczenia (świadome)
 - **Ryanair i trivago to nieoficjalne dostępy** do danych, z których korzystają ich własne strony. Mogą się zmienić bez ostrzeżenia. Wtedy wyszukiwanie kończy się błędem, wczorajsze okazje zostają w aplikacji z informacją, że dane są nieaktualne, a GitHub wysyła e-mail o nieudanym uruchomieniu.
-- **Loty: tylko Ryanair.** To zdecydowanie największy przewoźnik z POZ/WRO/BZG/SZZ (z Poznania 41 tras). Wizz Air lata z POZ zimą tylko do Londynu-Luton, Bazylei i Kutaisi, a jego wyszukiwarka blokuje automaty. Szczegóły w `docs/RESEARCH.md`.
+- **Loty: Ryanair i Wizz Air.** Ryanair jest źródłem głównym: jeśli nie odpowiada, przebieg się nie publikuje. Wizz Air jest dodatkiem: jego awaria nie blokuje ofert Ryanaira. Wizz podaje w rozkładzie **cenę za osobę** (cena dla 2 osób = 2 × cena, bez gwarancji 2 miejsc) i tylko godziny wylotu, więc godziny przylotu i czas na miejscu są **szacunkowe** (oznaczone „~”). Link do rezerwacji Wizz ustawia trasę, daty i 2 dorosłych. Innych przewoźników (LOT, KLM, SAS…) nie ma. Szczegóły w `docs/RESEARCH.md`.
 - **Pierwszy test z serwerów GitHuba dopiero przed nami.** Źródła sprawdzałem z Twojego domowego łącza. Jeśli Ryanair albo trivago zablokują GitHuba, rozwiązaniem awaryjnym jest uruchamianie wyszukiwania na Macu (launchd) i publikacja przez GitHub.
 - **Cena bagażu to szacunek:** środek oficjalnego cennika Ryanair przeliczony po kursie NBP. Dokładne ceny wymagałyby akceptacji regulaminu Ryanaira w Twoim imieniu (`ToUs=AGREED`), na co nie było zgody. Aplikacja zawsze oznacza bagaż jako szacunek.
 - **Nocleg:** trivago nie zwraca absolutnie najtańszej oferty w mieście, tylko najlepszą z maks. 75 obiektów z 3 zapytań. Nie potwierdza też prywatnej łazienki, dlatego wykluczamy hostele (po typie obiektu z trivago i po nazwie) oraz obiekty poniżej 2★ (poza apartamentami). Nocleg jest zwykle do 3 km od centrum; gdy tak blisko nic nie spełnia kryteriów, do 5 km. Odległość zawsze widać przy ofercie. Cena to „cena łączna wg trivago”; ewentualna opłata miejscowa bywa pobierana na miejscu.

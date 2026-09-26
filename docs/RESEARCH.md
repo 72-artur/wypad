@@ -15,6 +15,7 @@ Przed budową sprawdziłem 3 obszary: źródła lotów, źródła noclegów oraz
 | Bagaż | **Szacunek:** środek oficjalnego cennika Ryanair × kurs EUR z NBP | Dokładne ceny (taryfy Regular i Plus przez `FareOptions`) wymagają zapytania o dostępność z `ToUs=AGREED`, czyli akceptacji regulaminu w imieniu Artura. **Artur się nie zgodził.** | `FareOptions` po ewentualnej zgodzie |
 | Noclegi | **trivago MCP**, 3 warianty zapytania na termin | Bez klucza. Cena za cały pobyt dla 2 osób w PLN, ocena, gwiazdki, współrzędne, zdjęcie i link z datami i 2 dorosłymi. [Z] | SerpApi Google Hotels (250 wyszukiwań/mies. za darmo, klucz) |
 | Linki do zakupu | ryanair.com (trasa, daty, 2 dorosłych), trivago (oferta w pokazanej cenie), Booking.com (wyszukanie obiektu z datami i 2 dorosłymi) | Wszystkie formaty sprawdzone w przeglądarce. [Z] | Google Flights (link `tfs`) jako porównanie |
+| Loty, dodatek | **Wizz Air** (rozkład `search/timetable`) | Dodane 26.09.2026 na prośbę Artura: ok. 20 tras do naszych miast, głównie z Wrocławia. Ceny za osobę bez gwarancji 2 miejsc; brak godzin przylotu (szacujemy z odległości i stref czasowych). [Z] | Awaria Wizz nie blokuje ofert Ryanaira |
 | Pogoda | Open-Meteo | Darmowe, bez klucza. Prognoza do ~2 tygodni, dalej średnia miesięczna z 3 ostatnich pełnych lat. Archiwum Open-Meteo prawie zawsze przekraczało limit czasu z serwerów GitHuba, więc klimat 83 miast jest policzony raz i zapisany w `state/climate.json`. [Z] | — |
 | Hosting | **GitHub Actions + GitHub Pages** (publiczne repo) | 0 zł, codzienny cron, sekrety, własna domena HTTPS (warunek PWA), publiczne linki do ofert. [C] | Mac + launchd (gdy GitHub będzie blokowany przez źródła); Cloud Run z kredytów Google AI Pro |
 | Powiadomienia | ntfy (push) + e-mail SMTP (Gmail albo iCloud Mail) | Wybór Artura; żadne nie wymaga serwera. | Telegram, Pushover |
@@ -27,7 +28,7 @@ Przed budową sprawdziłem 3 obszary: źródła lotów, źródła noclegów oraz
 |---|---|---|---|---|
 | Ryanair `farfnd` (roundTripFares, oneWayFares) | Kombinacje dat, godziny, nr lotów, cena za N osób (`adultPaxCount`) | Bez klucza, nieoficjalne | [Z] działa. Ceny z pamięci podręcznej sprzed 0,1–7 h | **Główne źródło** |
 | Ryanair `availability` + `FareOptions` | Dokładne loty, liczba wolnych miejsc, ceny pakietów z bagażem | Bez klucza, ale `availability` wymaga `ToUs=AGREED` | [Z] działa (4 zapytania w researchu) | **Nieużywane** (decyzja Artura) |
-| Wizz Air | Mapa tras i rozkład z cenami za osobę | Wersję API trzeba odczytać z HTML strony. Pełna wyszukiwarka zwraca 429 (blokada botów) | [Z] Z POZ zimą tylko Londyn-Luton, Bazylea, Kutaisi | Pominięte w v1 |
+| Wizz Air | Mapa tras i rozkład z cenami za osobę | Wersję API trzeba odczytać z HTML strony. Pełna wyszukiwarka zwraca 429 (blokada botów) | [Z] Z POZ zimą tylko Londyn-Luton, Bazylea, Kutaisi; z WRO 26 tras | **Dodane 26.09 na prośbę Artura** (patrz niżej) |
 | Kiwi.com MCP (`mcp.kiwi.com`) | Wszyscy przewoźnicy, cena za 2 osoby z bagażem, link do rezerwacji | Bez klucza | [Z] działa. Ceny o 2% taniej do 28% drożej niż bezpośrednio. Zdarzają się loty „open-jaw” | Rezerwa |
 | Kiwi Tequila API | Dawny standard | Tylko na zaproszenie od maja 2024 | [C] | Odpada |
 | Amadeus Self-Service | GDS, bez tanich linii | Wyłączone 17.07.2026 | [Z] brak DNS | Odpada |
@@ -94,3 +95,10 @@ Jak omijamy znane pułapki:
 - **trivago:** serwer MCP nie ma opublikowanych zasad ani limitów. Regulamin serwisu (§5.5) zakazuje automatycznych wywołań stron. Skala: ~55 zapytań dziennie.
 - **Booking.com, Airbnb:** tylko linki; nic nie pobieramy.
 - **Nie akceptujemy żadnych regulaminów w imieniu Artura** (bez `ToUs=AGREED`).
+
+## 5. Uzupełnienie 26.09.2026: Wizz Air — co wyszło przy wdrożeniu [Z]
+- **Okno dat:** rozkład przyjmuje najwyżej ~38 dni na zapytanie (41+ dni → HTTP 400 „InvalidProtocol”). 8 tygodni dzielimy więc na 2 okna po 30 dni.
+- **Ochrona przed CSRF:** pierwsze zapytanie w sesji ustawia ciasteczko `RequestVerificationToken`. Każde kolejne bez nagłówka `X-RequestVerificationToken` z jego wartością dostaje HTTP 400 „InvalidProtocol”. Tak robi też sama strona Wizz.
+- **`priceType: checkPrice`** oznacza cenę 0, czyli nieznaną. Takie dni pomijamy, podobnie jak dni z kilkoma lotami, bo rozkład nie mówi, którego lotu dotyczy cena.
+- **Bagaż Wizz:** WIZZ Priority 13–57,50 € za osobę za lot; walizka 20 kg 0–112,50 € (w szczycie 15.12–10.01: 2–122 €). Szacunek to środek zakresu.
+- **Link do rezerwacji:** `wizzair.com/pl-pl/booking/select-flight/{z}/{do}/{wylot}/{powrót}/2/0/0/null`. Trasa i daty się wypełniają; listy lotów nie dało się sprawdzić automatyczną przeglądarką (ochrona Kasada).

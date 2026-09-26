@@ -34,7 +34,7 @@ class Settings:
     max_distance_km: float = 3.0    # from the city centre
     max_candidates_per_city: int = 2
     max_hotel_searches: int = 18    # per daily run
-    max_deals: int = 24             # published per day
+    max_deals: int = 18             # published per day (at most one per hotel search)
     archive_days: int = 60
     request_delay_s: float = 1.0
     site_url: str = field(default_factory=lambda: os.environ.get("WYPAD_SITE_URL", "").rstrip("/"))

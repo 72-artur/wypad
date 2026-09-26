@@ -13,7 +13,7 @@ import logging
 import math
 import re
 from datetime import date
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode, urlparse
 
 import requests
 
@@ -22,9 +22,26 @@ from ..http import UA
 log = logging.getLogger(__name__)
 MCP_URL = "https://mcp.trivago.com/mcp"
 PROTOCOL = "2025-06-18"
-HOSTEL_WORDS = re.compile(r"hostel|backpack|youth|dorm|capsule|kapsu|camping|kemping|pod hotel|ostello|"
+HOSTEL_WORDS = re.compile(r"hostel|backpack|youth|\byha\b|dorm|capsule|kapsu|camping|kemping|pod hotel|ostello|"
                           r"jugendherberge|auberge de jeunesse|albergue", re.I)
 APARTMENT_WORDS = re.compile(r"apart|flat|suites?\b|residen|loft|studio", re.I)
+# trivago puts the property type in front of the name in its link slug (…/lm/hostel-schronisko-the-bristol-wing).
+# Stars are unreliable for hostels (The Bristol Wing: a hostel with hotel_rating 4), so the type decides.
+TYPE_PREFIXES = (
+    ("hostel-schronisko-", "Hostel"), ("hostel-", "Hostel"),
+    ("cały-dom-apartament-", "Apartament"), ("caly-dom-apartament-", "Apartament"), ("apartament-", "Apartament"),
+    ("aparthotel-", "Aparthotel"), ("pensjonat-", "Pensjonat"), ("kemping-", "Kemping"), ("hotel-", "Hotel"),
+)
+
+
+def property_type(url: str | None, name: str) -> str | None:
+    slug = unquote(urlparse(url or "").path.split("/lm/")[-1]) if url and "/lm/" in url else ""
+    for prefix, kind in TYPE_PREFIXES:
+        if slug.startswith(prefix):
+            return kind
+    if re.search(r"\bhotel\b", name, re.I):
+        return "Hotel"
+    return None
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -119,14 +136,19 @@ class Trivago:
                 "adults": adults, "rooms": 1, "country": "PL", "currency": "PLN", "language": "PL_PL",
                 "review_rating": {"rating80": True}}
         seen: dict[str, dict] = {}
+        failures: list[str] = []
         # Results come in trivago's relevance order, not by price, and each filter surfaces a different
         # set; three variants (any / 2–3★ / with kitchen = apartments) cover the cheaper end much better.
-        for extra in ({}, {"hotel_rating": {"2star": True, "3star": True}}, {"filters": {"kitchen": True}}):
+        variants = ({}, {"hotel_rating": {"2star": True, "3star": True}}, {"filters": {"kitchen": True}})
+        for extra in variants:
             try:
                 for a in self._search({**base, **extra}):
                     seen.setdefault(a.get("accommodation_id") or a.get("accommodation_name"), a)
-            except Exception as e:  # noqa: BLE001 — one failed variant should not lose the other
+            except Exception as e:  # noqa: BLE001 — one failed variant should not lose the others
                 log.warning("trivago search %s failed: %s", extra or "default", e)
+                failures.append(f"{type(e).__name__}: {e}")
+        if len(failures) == len(variants):
+            raise RuntimeError(f"trivago: all searches failed ({failures[0]})")
         return [o for a in seen.values() if (o := normalize(a, lat, lon, check_in, check_out))]
 
 
@@ -143,14 +165,24 @@ def normalize(a: dict, lat: float, lon: float, check_in: date, check_out: date) 
     name = (a.get("accommodation_name") or "").strip()
     dist = (round(haversine_km(lat, lon, a["latitude"], a["longitude"]), 1)
             if a.get("latitude") is not None and a.get("longitude") is not None else None)
-    apartment = bool(APARTMENT_WORDS.search(name))
+    url = a.get("accommodation_url") if str(a.get("accommodation_url", "")).startswith("https://") else None
+    ptype = property_type(url, name)
+    apartment = ptype in ("Apartament", "Aparthotel") or (ptype is None and bool(APARTMENT_WORDS.search(name)))
+    hostel = ptype in ("Hostel", "Kemping") or bool(HOSTEL_WORDS.search(name))
+    if ptype == "Hotel" and stars:
+        kind = f"Hotel {stars}★"
+    elif ptype and ptype != "Hotel":
+        kind = ptype
+    else:
+        kind = "Apartament" if apartment else (f"Hotel {stars}★" if stars else "Obiekt")
     return {
         "id": a.get("accommodation_id"),
         "name": name,
-        "kind": "Apartament" if apartment and stars < 2 else (f"Hotel {stars}★" if stars else "Obiekt"),
-        "stars": stars or None,
+        "kind": kind,
+        "type": ptype,
+        "stars": stars if ptype not in ("Hostel", "Kemping") and stars else None,
         "apartment": apartment,
-        "hostel_like": bool(HOSTEL_WORDS.search(name)),
+        "hostel_like": hostel,
         "rating": rating,
         "rating_source": "trivago",
         "reviews": parse_pln(a.get("review_count")),
@@ -161,7 +193,7 @@ def normalize(a: dict, lat: float, lon: float, check_in: date, check_out: date) 
         "price_total": total,
         "price_night": round(total / max(nights, 1)),
         "provider": a.get("advertisers") or None,
-        "trivago_url": a.get("accommodation_url") if str(a.get("accommodation_url", "")).startswith("https://") else None,
+        "trivago_url": url,
     }
 
 

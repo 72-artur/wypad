@@ -1,7 +1,7 @@
 {
   "name": "Wypad — okazje na city break",
   "short_name": "Wypad",
-  "description": "Codziennie rano: najtańsze city breaki z Poznania i okolic. Lot, bagaż i nocleg dla 2 osób w jednej cenie.",
+  "description": "Codziennie rano: tanie city breaki z Poznania i okolic. Lot, bagaż i nocleg dla 2 osób w jednej cenie.",
   "lang": "pl",
   "start_url": "./",
   "scope": "./",

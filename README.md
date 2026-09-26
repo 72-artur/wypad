@@ -11,10 +11,10 @@ Koszt: 0 zł. Źródła danych (Ryanair, trivago, Open-Meteo) nie wymagają kluc
 ## Jak to działa
 
 ```
-06:23  GitHub Actions (cron; zapasowy termin 08:53)
+06:23  GitHub Actions (cron; zapasowy termin 08:53; zimą 05:23 i 07:53)
    │   1. Ryanair: trasy z POZ, WRO, BZG, SZZ, LCJ → wszystkie terminy 2–4 noce w ciągu 8 tygodni
    │   2. wybór ~18 najlepszych kandydatów (cena/noc/os., zniżka vs typowa cena trasy, czas na miejscu, POZ)
-   │   3. trivago: nocleg na dokładnie te daty dla 2 dorosłych (ocena ≥ 8, ≤ 3 km od centrum, bez hosteli)
+   │   3. trivago: nocleg na dokładnie te daty dla 2 dorosłych (ocena ≥ 8, zwykle ≤ 3 km od centrum, bez hosteli)
    │   4. bagaż: szacunek z oficjalnego cennika Ryanair × kurs EUR z NBP; pogoda: Open-Meteo
    │   5. zapis: site/data/deals.json + archiwum dnia + strony do udostępniania site/d/<data>/<id>.html
    ├─► commit do repozytorium (historia cen w state/)
@@ -52,7 +52,7 @@ Adres aplikacji: `https://<twój-login>.github.io/wypad/`.
 Każdy kanał jest opcjonalny: bez sekretu po prostu się nie wysyła.
 
 ### 4. Pierwsze uruchomienie
-**Actions → Codzienne okazje → Run workflow.** Po ~10–15 minutach aplikacja pokaże prawdziwe okazje, a Ty dostaniesz powiadomienia. Potem całość działa sama codziennie rano.
+**Actions → Codzienne okazje → Run workflow**, zaznacz **„Szukaj od nowa”** i uruchom. Bez tego przebieg w dniu, w którym repozytorium ma już dzisiejsze dane, tylko je opublikuje i niczego nie przetestuje. Po ~10 minutach aplikacja pokaże świeże okazje, a Ty dostaniesz powiadomienia. To zarazem test, czy Ryanair i trivago odpowiadają serwerom GitHuba. Potem całość działa sama codziennie rano.
 
 ### 5. iPhone
 Otwórz adres aplikacji w Safari → **Udostępnij → Do ekranu początkowego**.
@@ -74,4 +74,4 @@ cd ../site && python3 -m http.server 8765                       # podgląd: http
 - **Loty: tylko Ryanair.** To zdecydowanie największy przewoźnik z POZ/WRO/BZG/SZZ (z Poznania 41 tras). Wizz Air lata z POZ zimą tylko do Londynu-Luton, Bazylei i Kutaisi, a jego wyszukiwarka blokuje automaty. Szczegóły w `docs/RESEARCH.md`.
 - **Pierwszy test z serwerów GitHuba dopiero przed nami.** Źródła sprawdzałem z Twojego domowego łącza. Jeśli Ryanair albo trivago zablokują GitHuba, rozwiązaniem awaryjnym jest uruchamianie wyszukiwania na Macu (launchd) i publikacja przez GitHub.
 - **Cena bagażu to szacunek:** środek oficjalnego cennika Ryanair przeliczony po kursie NBP. Dokładne ceny wymagałyby akceptacji regulaminu Ryanaira w Twoim imieniu (`ToUs=AGREED`), na co nie było zgody. Aplikacja zawsze oznacza bagaż jako szacunek.
-- **Nocleg:** trivago nie zwraca absolutnie najtańszej oferty w mieście, tylko najlepszą z maks. 75 obiektów z 3 zapytań. Nie potwierdza też prywatnej łazienki, dlatego wykluczamy hostele i obiekty poniżej 2★ (poza apartamentami). Cena to „cena łączna wg trivago”; ewentualna opłata miejscowa bywa pobierana na miejscu.
+- **Nocleg:** trivago nie zwraca absolutnie najtańszej oferty w mieście, tylko najlepszą z maks. 75 obiektów z 3 zapytań. Nie potwierdza też prywatnej łazienki, dlatego wykluczamy hostele (po typie obiektu z trivago i po nazwie) oraz obiekty poniżej 2★ (poza apartamentami). Nocleg jest zwykle do 3 km od centrum; gdy tak blisko nic nie spełnia kryteriów, do 5 km. Odległość zawsze widać przy ofercie. Cena to „cena łączna wg trivago”; ewentualna opłata miejscowa bywa pobierana na miejscu.

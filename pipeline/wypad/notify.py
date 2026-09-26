@@ -26,10 +26,19 @@ def nights_pl(n: int) -> str:
     return f"{n} noce" if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14) else f"{n} nocy"
 
 
+def estimated(d: dict, bag: str) -> bool:
+    return bool(((d.get("flight") or {}).get("bags") or {}).get(bag, {}).get("estimated"))
+
+
+def price_text(d: dict, bag: str) -> str:
+    """'ok. 1994 zł' when the total contains an estimated baggage price."""
+    return f"{'ok. ' if estimated(d, bag) else ''}{_pln(d['totals'][bag])}"
+
+
 def deal_line(d: dict, bag: str) -> str:
     out, back = d["trip"]["out_date"], d["trip"]["back_date"]
     return (f"{d['city']['name']} {out[8:10]}.{out[5:7]}–{back[8:10]}.{back[5:7]} "
-            f"({nights_pl(d['trip']['nights'])}) z {d['flight']['out']['from']}: {_pln(d['totals'][bag])} za 2 os.")
+            f"({nights_pl(d['trip']['nights'])}) z {d['flight']['out']['from']}: {price_text(d, bag)} za 2 os.")
 
 
 def deal_url(site_url: str, d: dict) -> str:
@@ -44,7 +53,7 @@ def push_ntfy(deals: list[dict], *, topic: str | None, site_url: str, bag: str, 
     body = "\n".join(deal_line(d, bag) for d in top)
     click = deal_url(site_url, top[0]) or site_url
     headers = {
-        "Title": f"Wypad {date_label}: {top[0]['city']['name']} za {_pln(top[0]['totals'][bag])}".encode("utf-8"),
+        "Title": f"Wypad {date_label}: {top[0]['city']['name']} za {price_text(top[0], bag)}".encode("utf-8"),
         "Tags": "airplane",
         "Priority": "default",
     }
@@ -68,9 +77,9 @@ def email_html(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
           <div style="font:700 12px/1.3 Arial,sans-serif;color:#6f7b8f;text-transform:uppercase;letter-spacing:.06em">
             {html.escape(d['flight']['out']['from'])} → {html.escape(d['flight']['out']['to'])} · {html.escape(d['trip']['out_date'][8:10])}.{html.escape(d['trip']['out_date'][5:7])}–{html.escape(d['trip']['back_date'][8:10])}.{html.escape(d['trip']['back_date'][5:7])} · {nights_pl(d['trip']['nights'])}</div>
           <div style="font:800 22px/1.2 Arial,sans-serif;color:#121923;margin-top:4px">{html.escape(d['city']['name'])}
-            <span style="float:right;color:#cf4f35">{_pln(d['totals'][bag])}</span></div>
+            <span style="float:right;color:#cf4f35">{price_text(d, bag)}</span></div>
           <div style="font:14px/1.45 Arial,sans-serif;color:#485365;margin-top:4px">
-            Lot {html.escape(d['flight']['carrier'])} {_pln(d['flight']['fare_total'])} + bagaż {html.escape(bag_label)} {_pln(d['flight']['bags'][bag]['total'])}
+            Lot {html.escape(d['flight']['carrier'])} {_pln(d['flight']['fare_total'])} + bagaż {html.escape(bag_label)} {'~' if estimated(d, bag) else ''}{_pln(d['flight']['bags'][bag]['total'])}{' (szacunek)' if estimated(d, bag) else ''}
             + {html.escape(stay.get('name', 'nocleg'))}{f" ({stay['rating']:.1f}/10)" if stay.get('rating') else ''} {_pln(stay.get('price_total', 0))}</div>
           <a href="{url}" style="display:inline-block;margin-top:8px;font:700 14px Arial,sans-serif;color:#2c63a8">Zobacz szczegóły →</a>
         </td></tr>""")
@@ -79,7 +88,7 @@ def email_html(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px">
       <tr><td style="padding:22px 24px 6px;background:#121720;border-radius:16px 16px 0 0">
         <div style="font:900 28px/1 Arial Narrow,Arial,sans-serif;color:#ffb547;letter-spacing:.06em">ODLOTY · {html.escape(date_label)}</div>
-        <div style="font:13px/1.5 Arial,sans-serif;color:#8d97a8;padding:6px 0 14px">Ceny za 2 osoby: loty w obie strony, bagaż ({html.escape(bag_label)}) i nocleg na cały pobyt.</div>
+        <div style="font:13px/1.5 Arial,sans-serif;color:#8d97a8;padding:6px 0 14px">Ceny za 2 osoby: loty w obie strony, bagaż ({html.escape(bag_label)}; cena bagażu to szacunek z cennika Ryanair) i nocleg na cały pobyt.</div>
       </td></tr>
       <tr><td style="padding:4px 24px 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">{''.join(rows)}</table></td></tr>
       <tr><td style="padding:8px 24px 24px;font:13px/1.5 Arial,sans-serif;color:#6f7b8f">
@@ -99,7 +108,7 @@ def send_email(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
     port = int(smtp_port or 465)
     top = deals[0]
     msg = EmailMessage()
-    msg["Subject"] = (f"Wypad {date_label}: {top['city']['name']} za {_pln(top['totals'][bag])}"
+    msg["Subject"] = (f"Wypad {date_label}: {top['city']['name']} za {price_text(top, bag)}"
                       f"{f' i {len(deals) - 1} innych okazji' if len(deals) > 1 else ''}")
     msg["From"] = f"Wypad <{smtp_user}>"
     msg["To"] = mail_to

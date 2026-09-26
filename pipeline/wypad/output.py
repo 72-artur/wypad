@@ -5,9 +5,11 @@ from __future__ import annotations
 import html
 import json
 import logging
-import shutil
+import re
 from datetime import date, timedelta
 from pathlib import Path
+
+from .config import ORIGINS
 
 log = logging.getLogger(__name__)
 
@@ -40,10 +42,14 @@ def share_page(deal: dict, *, day: str, site_url: str, bag: str, bag_label: str)
     target = f"../../#/d/{day}/{deal['id']}"
     stay = deal.get("stay") or {}
     out, back = deal["trip"]["out_date"], deal["trip"]["back_date"]
-    title = f"{deal['city']['name']} {out[8:10]}.{out[5:7]}–{back[8:10]}.{back[5:7]}: {_pln(deal['totals'][bag])} za 2 osoby"
+    est = bool(((deal.get("flight") or {}).get("bags") or {}).get(bag, {}).get("estimated"))
+    title = (f"{deal['city']['name']} {out[8:10]}.{out[5:7]}–{back[8:10]}.{back[5:7]}: "
+             f"{'ok. ' if est else ''}{_pln(deal['totals'][bag])} za 2 osoby")
     rating = f" ({stay['rating']:.1f}/10)".replace(".", ",") if stay.get("rating") else ""
-    desc = (f"Lot {deal['flight']['carrier']} z {deal['flight']['out'].get('from_city') or deal['flight']['out']['from']}, "
-            f"bagaż: {bag_label}, nocleg: {stay.get('name', '—')}{rating}. Lot, bagaż i nocleg w jednej cenie.")
+    origin = deal["flight"]["out"]["from"]
+    origin_gen = ORIGINS.get(origin, {}).get("city_gen") or origin
+    desc = (f"Lot {deal['flight']['carrier']} z {origin_gen}, bagaż: {bag_label}{' (szacunek)' if est else ''}, "
+            f"nocleg: {stay.get('name', '—')}{rating}. Lot, bagaż i nocleg w jednej cenie.")
     image = stay.get("image") if str(stay.get("image", "")).startswith("https://") else (f"{site_url}/icons/og-default.png" if site_url else "")
     url = f"{site_url}/{share_path(day, deal['id'])}" if site_url else ""
     e = html.escape
@@ -68,13 +74,31 @@ def share_page(deal: dict, *, day: str, site_url: str, bag: str, bag_label: str)
 """
 
 
+def absolutize_index_og(site_dir: Path, site_url: str) -> None:
+    """Link-preview crawlers need absolute URLs; the site URL is only known on GitHub (WYPAD_SITE_URL)."""
+    index = site_dir / "index.html"
+    if not site_url or not index.exists():
+        return
+    text = index.read_text(encoding="utf-8")
+    new = re.sub(r'(<meta property="og:image" content=")[^"]*(")', rf'\g<1>{site_url}/icons/og-default.png\g<2>', text)
+    if 'property="og:url"' not in new:
+        new = new.replace('<meta property="og:image"', f'<meta property="og:url" content="{site_url}/">\n  <meta property="og:image"', 1)
+    if new != text:
+        index.write_text(new, encoding="utf-8")
+
+
 def publish(site_dir: Path, payload: dict, *, site_url: str, bag: str, bag_label: str, keep_days: int) -> None:
     day = payload["date"]
     for deal in payload["deals"]:
         deal["share_path"] = share_path(day, deal["id"])
     write_json(site_dir / "data" / "deals.json", payload)
-    write_json(site_dir / "data" / "archive" / f"{day}.json", payload)
-    shutil.rmtree(site_dir / "d" / day, ignore_errors=True)   # a same-day re-run replaces the day's pages
+    # A same-day re-run (manual "force") must not break links already sent in the morning push:
+    # deals that disappeared stay in the day's archive under "replaced" and keep their share pages.
+    old = read_json(site_dir / "data" / "archive" / f"{day}.json", {}) or {}
+    ids = {d["id"] for d in payload["deals"]}
+    replaced = [d for d in old.get("deals", []) + old.get("replaced", []) if d["id"] not in ids]
+    write_json(site_dir / "data" / "archive" / f"{day}.json", {**payload, "replaced": replaced} if replaced else payload)
+    absolutize_index_og(site_dir, site_url)
     for deal in payload["deals"]:
         p = site_dir / share_path(day, deal["id"])
         p.parent.mkdir(parents=True, exist_ok=True)

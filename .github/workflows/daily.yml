@@ -32,21 +32,11 @@ jobs:
     env:
       WYPAD_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Czy dzisiejsze okazje są już opublikowane?
         id: live
-        run: |
-          today=$(TZ=Europe/Warsaw date +%F)
-          live=$(curl -fsSL "$WYPAD_SITE_URL/data/deals.json" 2>/dev/null \
-            | python3 -c "import json,sys; d=json.load(sys.stdin); print('' if d.get('sample') else d.get('date',''))" 2>/dev/null || true)
-          echo "Dziś: $today, na stronie: ${live:-brak}"
-          if [ "$live" = "$today" ] && [ "${{ inputs.force }}" != "true" ]; then
-            echo "done=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "done=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - uses: actions/checkout@v4
-        if: steps.live.outputs.done != 'true'
+        run: python3 pipeline/live_check.py "$WYPAD_SITE_URL" "${{ inputs.force }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v5
         if: steps.live.outputs.done != 'true'

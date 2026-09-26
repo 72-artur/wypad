@@ -68,7 +68,7 @@ Co wiemy o trivago z testów [Z]:
 - **Zgodność ceny z Booking.com:** w próbie z 1 obiektem (Rzym) cena z trivago zgadzała się z ceną na Booking.com („Zawiera opłaty i podatki”).
 - **Ocena gości to własna średnia trivago.** Przykład: 8,9 na trivago wobec 8,5 na Booking.com. W aplikacji podpisujemy ją „ocena trivago”.
 - **Wyniki nie są posortowane po cenie i nie obejmują absolutnie najtańszych ofert w mieście.** Przykład z Rzymu: na Booking.com najtaniej 731 zł, na trivago 912 zł. Dlatego pytamy 3 razy (bez filtra, hotele 2–3★, obiekty z kuchnią) i sami wybieramy najtańszy obiekt spełniający kryteria.
-- **trivago nie mówi, czy łazienka jest prywatna.** Wykluczamy więc hostele (po nazwie) i obiekty poniżej 2★, poza apartamentami. Aplikacja nigdzie nie obiecuje prywatnej łazienki.
+- **trivago nie mówi, czy łazienka jest prywatna.** Wykluczamy więc hostele i obiekty poniżej 2★, poza apartamentami. Typ obiektu bierzemy z linku trivago (np. `…/lm/hostel-schronisko-…`), bo gwiazdki bywają mylące: hostel „The Bristol Wing” miał w danych 4★. Aplikacja nigdzie nie obiecuje prywatnej łazienki.
 - **Podatek miejski:** w sprawdzonych ofertach Booking był wliczony, ale centrum pomocy trivago mówi „zwykle bez podatków”. Dlatego piszemy „cena łączna wg trivago”, a nie „cena z podatkami”.
 
 ## 3. Hosting i automatyzacja bez serwera [C, na podstawie oficjalnych stron]
@@ -85,9 +85,9 @@ Co wiemy o trivago z testów [Z]:
 | iCloud+ / Skróty Apple | — | automatyzacja na telefonie | brak hostingu | — | Odpada |
 
 Jak omijamy znane pułapki:
-- **Spóźniony cron:** 2 terminy dziennie (06:23 i 08:53 czasu polskiego latem). Drugi przebieg nic nie robi, jeśli dzisiejsze okazje są już opublikowane. Jeśli dane z dziś są w repo, a nie udała się tylko publikacja, wyszukiwanie jest pomijane i ponawiana jest tylko publikacja.
+- **Spóźniony cron:** 2 terminy dziennie (06:23 i 08:53 latem, 05:23 i 07:53 zimą). Drugi przebieg nic nie robi, jeśli dzisiejsze okazje są już opublikowane. Jeśli dane z dziś są w repo, a nie udała się tylko publikacja, wyszukiwanie jest pomijane i ponawiana jest tylko publikacja.
 - **Każda publikacja zastępuje całą stronę:** strony udostępnionych ofert z ostatnich 60 dni są w repozytorium i idą w każdej publikacji, więc wczorajszy link nie zwraca 404.
-- **Blokada IP GitHuba przez źródła:** wtedy wyszukiwanie kończy się błędem i nie nadpisuje danych. Aplikacja pokazuje baner „dane nieaktualne”, a GitHub wysyła e-mail o błędzie. Rozwiązanie awaryjne: uruchamianie na Macu (launchd) i publikacja przez GitHub.
+- **Blokada IP GitHuba przez źródła (także częściowa):** gdy więcej niż połowa zapytań do Ryanaira albo do trivago się nie uda, wyszukiwanie kończy się błędem i nie nadpisuje danych. Aplikacja pokazuje baner „dane nieaktualne”, a GitHub wysyła e-mail o błędzie. Rozwiązanie awaryjne: uruchamianie na Macu (launchd) i publikacja przez GitHub.
 
 ## 4. Zasady i ryzyka prawne (szara strefa)
 - **Ryanair:** `robots.txt` blokuje `/api`, a regulamin zakazuje scrapingu w celach komercyjnych. Wypad to osobisty, niekomercyjny użytek o małej skali (~90 zapytań dziennie), ale formalnie jest to szara strefa.

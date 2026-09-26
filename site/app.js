@@ -261,7 +261,7 @@ function runFlaps(root, animate) {
 /* ─── Ticket card ────────────────────────────────────────────────────── */
 function thumbHTML(deal, cls = 'thumb') {
   const img = safeUrl(deal.stay?.image);
-  if (img) return `<img class="${cls}" src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls} thumb-fallback',textContent:'${esc(deal.city.name[0])}'}))">`;
+  if (img) return `<img class="${cls}" src="${esc(img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-initial="${esc(deal.city.name[0])}">`;
   return `<div class="${cls} thumb-fallback" aria-hidden="true">${esc(deal.city.name[0])}</div>`;
 }
 function isSaved(id) { return state.saved.some((s) => s.deal.id === id); }
@@ -312,9 +312,10 @@ function noticeHTML(data) {
   if (data.sample) {
     out.push(`<p class="notice">${icon('info')}<span><b>Dane przykładowe.</b> Tak będzie wyglądać aplikacja. Pierwsze prawdziwe wyszukiwanie jeszcze się nie odbyło, więc ceny i hotele poniżej są zmyślone.</span></p>`);
   }
-  const ageH = (Date.now() - new Date(data.generated_at)) / 3600000;
-  if (!data.sample && ageH > 36) {
-    out.push(`<p class="notice">${icon('clock')}<span>Te okazje pochodzą z ${esc(stampLabel(data.generated_at))}. Dzisiejsze wyszukiwanie jeszcze się nie zakończyło, więc ceny mogą być nieaktualne.</span></p>`);
+  const hourPL = Number(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Europe/Warsaw' }).format(new Date()));
+  const staleDays = daysBetween(data.date, todayISO());
+  if (!data.sample && (staleDays >= 2 || (staleDays === 1 && hourPL >= 10))) {
+    out.push(`<p class="notice">${icon('clock')}<span>Dzisiejsze wyszukiwanie się nie udało albo jeszcze trwa. Pokazuję okazje z ${esc(stampLabel(data.generated_at))}, więc ceny mogły się zmienić.</span></p>`);
   }
   return out.join('');
 }
@@ -385,6 +386,14 @@ async function renderDeal(date, id) {
     archived = true;
   }
   let deal = data?.deals?.find((d) => d.id === id);
+  let replaced = false;
+  if (!deal && date) {
+    // A same-day re-run keeps earlier proposals in the day's archive under "replaced".
+    const arch = date === state.data.date ? await fetchJSON(archiveUrl(date)).catch(() => null) : data;
+    deal = arch?.deals?.find((d) => d.id === id) || arch?.replaced?.find((d) => d.id === id);
+    replaced = Boolean(arch?.replaced?.some((d) => d.id === id));
+    if (deal) archived = true;
+  }
   if (!deal) {
     const snap = state.saved.find((s) => s.deal.id === id && (!date || s.date === date));
     if (snap) { deal = snap.deal; archived = snap.date !== state.data.date; date = snap.date; }
@@ -423,7 +432,7 @@ async function renderDeal(date, id) {
       <h1 class="d-city">${esc(deal.city.name)}${deal.city.via ? `<span class="via">Lotnisko ${esc(deal.city.via)}</span>` : ''}</h1>
       ${deal.city.tagline ? `<p class="d-tagline">${esc(deal.city.tagline)}</p>` : ''}
       <div class="d-labels">${labelsHTML(deal)}</div>
-      ${archived ? `<p class="notice archived">${icon('clock')}<span>Propozycja z ${esc(dayLong(dealDate))}. Ceny mogły się zmienić, sprawdź je przed zakupem.</span></p>` : ''}
+      ${archived ? `<p class="notice archived">${icon('clock')}<span>${replaced ? 'Tę propozycję zastąpiło nowsze wyszukiwanie' : `Propozycja z ${esc(dayLong(dealDate))}`}. Ceny mogły się zmienić, sprawdź je przed zakupem.</span></p>` : ''}
       <dl class="facts">
         <div class="fact"><dt>Na miejscu</dt><dd class="num">${esc(durationLabel(deal.trip.on_ground_h))}<small>od lądowania do odlotu</small></dd></div>
         <div class="fact"><dt>Wylot</dt><dd>${esc(untilLabel(days))}<small>${esc(dayLong(deal.trip.out_date))}</small></dd></div>
@@ -533,7 +542,7 @@ function stayHTML(deal, bookStay) {
         ${bookStay ? `<a class="btn btn-primary btn-block" href="${esc(bookStay)}" target="_blank" rel="noopener">${icon('external-link')}${s.source === 'trivago' ? `Zobacz tę ofertę${s.provider ? ` (${esc(s.provider)})` : ''}` : `Zarezerwuj w ${esc(s.provider || 'serwisie')}`}</a>` : ''}
         ${bookingSame ? `<a class="btn btn-ghost btn-block" href="${esc(bookingSame)}" target="_blank" rel="noopener">Szukaj tego obiektu na Booking.com</a>` : ''}
       </div>
-      ${s.source === 'trivago' ? '<p class="fineprint">Pierwszy przycisk otwiera porównywarkę trivago z tymi datami i 2 dorosłymi. Stamtąd przechodzisz do serwisu z ofertą w pokazanej cenie.</p>' : ''}
+      ${s.source === 'trivago' ? '<p class="fineprint">Pierwszy przycisk otwiera porównywarkę trivago z tymi datami i 2 dorosłymi, a stamtąd przejdziesz do serwisu z tą ofertą. Cena mogła się zmienić od porannego wyszukiwania.</p>' : ''}
       ${bookingCity ? `<p class="fineprint"><a href="${esc(bookingCity)}" target="_blank" rel="noopener">Więcej hoteli z oceną 8+ do 3 km od centrum na Booking.com →</a></p>` : ''}
       ${alts.length ? `
       <div class="alts"><h3>Inne opcje na te same daty</h3>
@@ -569,7 +578,7 @@ function renderInfo() {
   <div class="prose">
     <h1>Jak to działa</h1>
     <p>Codziennie rano automat przeszukuje tanie loty w obie strony z <b>Poznania</b> i pobliskich lotnisk (Wrocław, Bydgoszcz, Szczecin, Łódź) do miast, które nadają się na city break. Szuka wyjazdów na <b>2–4 noce</b> w ciągu najbliższych <b>8 tygodni</b>.</p>
-    <p>Do najlepszych połączeń dobiera nocleg na <b>dokładnie te same daty dla 2 dorosłych</b>: hotel co najmniej 2★ albo apartament (bez hosteli i pokoi wieloosobowych), z oceną gości co najmniej 8/10 i do 3 km od centrum. Z tych obiektów wybiera najtańszy.</p>
+    <p>Do najlepszych połączeń dobiera nocleg na <b>dokładnie te same daty dla 2 dorosłych</b>: hotel co najmniej 2★ albo apartament (bez hosteli), z oceną gości co najmniej 8/10, zwykle do 3 km od centrum (jeśli tak blisko nic nie spełnia kryteriów, do 5 km). Odległość zawsze widać przy ofercie. Z tych obiektów wybiera najtańszy.</p>
     <h2>Co jest w cenie</h2>
     <ul>
       <li><b>Loty w obie strony dla 2 osób</b>, według cen z wyszukiwarki przewoźnika.</li>
@@ -615,7 +624,7 @@ function filtersBodyHTML() {
     <p class="fineprint">${esc(bags[f.bag]?.long || '')}</p>
   </div>
   <div class="fgroup">
-    <label class="switch-row"><span>Tylko weekendy<small>Pobyt obejmuje noc z soboty na niedzielę</small></span><input class="switch" type="checkbox" name="weekendOnly" ${f.weekendOnly ? 'checked' : ''}></label>
+    <label class="switch-row"><span>Tylko weekendy<small>Wylot czw.–sob., powrót nd. lub pn.</small></span><input class="switch" type="checkbox" name="weekendOnly" ${f.weekendOnly ? 'checked' : ''}></label>
     <label class="switch-row"><span>Tylko last minute<small>Wylot w ciągu ${state.data.defaults?.last_minute_days || 21} dni</small></span><input class="switch" type="checkbox" name="lastMinuteOnly" ${f.lastMinuteOnly ? 'checked' : ''}></label>
   </div>
   <div class="fgroup"><div class="flabel">Kolejność</div>
@@ -750,6 +759,15 @@ function toast(msg) {
 }
 
 /* ─── Events ─────────────────────────────────────────────────────────── */
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || img.dataset.initial === undefined) return;
+  const div = document.createElement('div');
+  div.className = `${img.className} thumb-fallback`;
+  div.textContent = img.dataset.initial;
+  img.replaceWith(div);
+}, true);
+
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-action]');
   if (!el) return;

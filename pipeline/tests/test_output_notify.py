@@ -11,7 +11,7 @@ def make_deal(**over):
         "city": {"name": "Barcelona", "key": "barcelona"},
         "trip": {"out_date": "2026-10-16", "back_date": "2026-10-19", "nights": 3},
         "flight": {"carrier": "Ryanair", "out": {"from": "POZ", "from_city": "Poznań", "to": "BCN"}, "fare_total": 578,
-                   "bags": {"cabin10": {"total": 236}}},
+                   "bags": {"cabin10": {"total": 236, "estimated": True}, "small": {"total": 0, "estimated": False}}},
         "stay": {"name": "Hotel <Test> & Co", "rating": 8.4, "price_total": 1180, "image": "https://example.com/h.jpg"},
         "totals": {"small": 1758, "cabin10": 1994, "checked20": 2076},
     }
@@ -21,7 +21,8 @@ def make_deal(**over):
 
 def test_share_page_has_og_tags_escaping_and_redirect():
     page = share_page(make_deal(), day="2026-09-25", site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg")
-    assert '<meta property="og:title" content="Barcelona 16.10–19.10: 1994 zł za 2 osoby">' in page
+    assert '<meta property="og:title" content="Barcelona 16.10–19.10: ok. 1994 zł za 2 osoby">' in page
+    assert "Lot Ryanair z Poznania, bagaż: 10 kg (szacunek)" in page
     assert "Hotel &lt;Test&gt; &amp; Co (8,4/10)" in page          # third-party text is escaped
     assert '<meta property="og:image" content="https://example.com/h.jpg">' in page
     assert 'content="0; url=../../#/d/2026-09-25/poz-bcn-20261016-20261019"' in page
@@ -72,9 +73,9 @@ def test_ntfy_payload(monkeypatch):
     d = make_deal(share_path="d/2026-09-25/poz-bcn-20261016-20261019.html")
     assert notify.push_ntfy([d], topic="wypad-abc", site_url="https://u.github.io/wypad", bag="cabin10", date_label="25.09")
     assert sent["url"] == "https://ntfy.sh/wypad-abc"
-    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: 1994 zł za 2 os."
+    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: ok. 1994 zł za 2 os."
     assert sent["headers"]["Click"] == "https://u.github.io/wypad/d/2026-09-25/poz-bcn-20261016-20261019.html"
-    assert sent["headers"]["Title"].decode() == "Wypad 25.09: Barcelona za 1994 zł"
+    assert sent["headers"]["Title"].decode() == "Wypad 25.09: Barcelona za ok. 1994 zł"
 
 
 def test_email_failure_does_not_raise(monkeypatch):
@@ -125,11 +126,29 @@ def test_icloud_smtp_uses_starttls_on_587(monkeypatch):
     assert ok
     assert events[0] == ("connect", "smtp.mail.me.com", 587)
     assert events[1] == ("starttls",) and events[2] == ("login", "artur@icloud.com")
-    assert events[3] == ("send", "a@b.pl", "Wypad 25.09: Barcelona za 1994 zł")
+    assert events[3] == ("send", "a@b.pl", "Wypad 25.09: Barcelona za ok. 1994 zł")
 
 
-def test_same_day_rerun_removes_pages_of_deals_that_disappeared(tmp_path):
+def test_same_day_rerun_keeps_morning_links_working(tmp_path):
     publish(tmp_path, {"date": "2026-09-25", "deals": [make_deal(id="old-deal")]}, site_url="", bag="cabin10", bag_label="10 kg", keep_days=60)
     publish(tmp_path, {"date": "2026-09-25", "deals": [make_deal(id="new-deal")]}, site_url="", bag="cabin10", bag_label="10 kg", keep_days=60)
-    assert not (tmp_path / "d/2026-09-25/old-deal.html").exists()
-    assert (tmp_path / "d/2026-09-25/new-deal.html").exists()
+    assert (tmp_path / "d/2026-09-25/old-deal.html").exists() and (tmp_path / "d/2026-09-25/new-deal.html").exists()
+    archive = json.loads((tmp_path / "data/archive/2026-09-25.json").read_text())
+    assert [d["id"] for d in archive["deals"]] == ["new-deal"]
+    assert [d["id"] for d in archive["replaced"]] == ["old-deal"]
+    assert "replaced" not in json.loads((tmp_path / "data/deals.json").read_text())
+
+
+def test_index_og_tags_become_absolute_on_github(tmp_path):
+    (tmp_path / "index.html").write_text('<head>\n  <meta property="og:image" content="icons/og-default.png">\n</head>')
+    publish(tmp_path, {"date": "2026-09-25", "deals": []}, site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg", keep_days=60)
+    page = (tmp_path / "index.html").read_text()
+    assert '<meta property="og:image" content="https://u.github.io/wypad/icons/og-default.png">' in page
+    assert '<meta property="og:url" content="https://u.github.io/wypad/">' in page
+
+
+
+
+def test_exact_price_without_estimated_bag_has_no_ok_prefix():
+    d = make_deal()
+    assert notify.price_text(d, "small") == "1758 zł" and notify.price_text(d, "cabin10") == "ok. 1994 zł"

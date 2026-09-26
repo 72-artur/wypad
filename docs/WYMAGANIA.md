@@ -17,8 +17,8 @@ Raz dziennie wyszukać i pokazać okazyjne (tanie, last minute, promocyjne) loty
 | Lotniska wylotu | Poznań (POZ) priorytetowo + Wrocław (WRO), Bydgoszcz (BZG), Szczecin (SZZ), Łódź (LCJ). Oferty z POZ oznaczone i premiowane w sortowaniu |
 | Długość wyjazdu | Dowolne dni tygodnia, 2–4 noce. Filtr „tylko weekendy” w aplikacji |
 | Horyzont | Wyloty do 8 tygodni naprzód. Wyloty w ciągu 21 dni oznaczone „last minute” |
-| Bagaż | Warianty ceny: sam plecak / walizka kabinowa 10 kg / plecak + walizka rejestrowana 20 kg na 2 os. **Domyślnie 10 kg na osobę** |
-| Nocleg | Prywatna łazienka, ocena gości ≥ 8/10, blisko centrum. Hotel lub apartament |
+| Bagaż | Warianty ceny: sam plecak / walizka kabinowa 10 kg / plecak + walizka rejestrowana 20 kg na 2 os. **Domyślnie 10 kg na osobę**. Cena bagażu to **szacunek z cennika Ryanair** (decyzja 25.09: bez akceptacji regulaminu Ryanaira `ToUs=AGREED`, która dałaby dokładne ceny) |
+| Nocleg | Prywatna łazienka, ocena gości ≥ 8/10, blisko centrum. Hotel lub apartament. *Realizacja: źródło (trivago) nie podaje typu łazienki, więc przybliżamy to wykluczeniem hosteli i obiektów < 2★ (poza apartamentami); „blisko centrum” = zwykle ≤ 3 km, awaryjnie ≤ 5 km* |
 | Budżet | Domyślny próg 2500 zł łącznie za 2 osoby (loty + bagaż + nocleg), suwak w aplikacji |
 | Hosting | GitHub Actions (codzienne wyszukiwanie) + GitHub Pages (aplikacja). Artur zakłada konto |
 | Powiadomienia | Push na telefon (ntfy) **oraz** poranny e-mail |

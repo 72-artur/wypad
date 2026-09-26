@@ -74,7 +74,7 @@ def test_ntfy_payload(monkeypatch):
     d = make_deal(share_path="d/2026-09-25/poz-bcn-20261016-20261019.html")
     assert notify.push_ntfy([d], topic="wypad-abc", site_url="https://u.github.io/wypad", bag="cabin10", date_label="25.09")
     assert sent["url"] == "https://ntfy.sh/wypad-abc"
-    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: lot ok. 814 zł + nocleg 1180 zł = ok. 1994 zł za 2 os."
+    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ (Ryanair): lot ok. 814 zł + nocleg 1180 zł = ok. 1994 zł za 2 os."
     assert sent["headers"]["Click"] == "https://u.github.io/wypad/d/2026-09-25/poz-bcn-20261016-20261019.html"
     assert sent["headers"]["Title"].decode() == "Wypad 25.09: Barcelona za ok. 1994 zł"
 
@@ -168,3 +168,14 @@ def test_email_shows_flight_plus_stay_equals_total():
     assert "Lot Ryanair z bagażem 10 kg (szacunek): ok. 814 zł" in page
     assert "+ nocleg Hotel &lt;Test&gt; &amp; Co (8,4/10): 1180 zł" in page
     assert "= <b>ok. 1994 zł</b> za 2 osoby" in page
+
+
+def test_wizz_prices_are_marked_as_estimates_even_without_estimated_bags():
+    d = make_deal()
+    d["flight"] = {**d["flight"], "carrier": "Wizz Air", "two_seats_confirmed": False}
+    assert notify.price_text(d, "small") == "ok. 1758 zł"                     # 2 × price per person
+    assert notify.deal_line(d, "small").endswith("z POZ (Wizz Air): lot ok. 578 zł + nocleg 1180 zł = ok. 1758 zł za 2 os.")
+    page = share_page(d, day="2026-09-26", site_url="", bag="small", bag_label="plecak")
+    assert "ok. 1758 zł za 2 osoby" in page and "2 × cena za osobę" in page
+    mail = notify.email_html([d], site_url="", bag="small", bag_label="plecak", date_label="26.09")
+    assert "2 × cena za osobę" in mail and "= <b>ok. 1758 zł</b>" in mail

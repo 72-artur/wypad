@@ -12,15 +12,22 @@ does not say which of them has the listed price.
 """
 from __future__ import annotations
 
+import logging
 import math
 import re
+import time
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from ..config import ORIGINS
+from ..destinations import city_for_airport
 from ..http import Http
 
+log = logging.getLogger(__name__)
 HOME = "https://wizzair.com/pl-pl"
-WINDOW_DAYS = 30
+MAX_SPAN_DAYS = 35        # 'to' minus 'from' per timetable leg; 38 worked, 41+ is rejected (HTTP 400)
+BUDGET_S = 480            # Wizz is a bonus source: never let it eat the job's 45-minute limit
+MAX_CONSECUTIVE_FAILURES = 3
 HEADERS = {"Origin": "https://wizzair.com", "Referer": "https://wizzair.com/", "Content-Type": "application/json"}
 
 # Country code (from the Wizz route map) → time zone, for arrival estimates.
@@ -75,11 +82,22 @@ class WizzAir:
     name = "Wizz Air"
     code = "W6"
 
-    def __init__(self, http: Http):
+    def __init__(self, http: Http, budget_s: float = BUDGET_S, clock=None):
         self.http = http
         self._api: str | None = None
         self._stations: dict[str, dict] | None = None
         self._failed: str | None = None
+        self._clock = clock or time.monotonic
+        self._deadline = self._clock() + budget_s
+        self._consecutive_failures = 0
+        self.partial_errors: list[str] = []      # failed date windows on routes that still returned fares
+
+    def _check_breaker(self) -> None:
+        if self._failed:
+            raise RuntimeError(self._failed)
+        if self._clock() > self._deadline:
+            self._failed = "Wizz Air: przekroczony limit czasu, pozostałe trasy pominięte"
+            raise RuntimeError(self._failed)
 
     def api(self) -> str:
         if self._failed:
@@ -98,13 +116,22 @@ class WizzAir:
 
     def stations(self) -> dict[str, dict]:
         if self._stations is None:
-            data = self.http.get_json(f"{self.api()}/asset/map", params={"languageCode": "pl-pl"})
+            try:
+                data = self.http.get_json(f"{self.api()}/asset/map", params={"languageCode": "pl-pl"})
+            except Exception as e:  # noqa: BLE001
+                self._failed = self._failed or f"Wizz Air niedostępny: {e}"
+                raise RuntimeError(self._failed) from e
             self._stations = {c["iata"]: c for c in data.get("cities", [])}
         return self._stations
 
     def _geo(self, iata: str) -> dict:
         c = self.stations().get(iata, {})
-        return {"lat": c.get("latitude"), "lon": c.get("longitude"), "cc": c.get("countryCode"), "name": c.get("shortName")}
+        city = city_for_airport(iata)
+        # Country (→ time zone) from our curated list when we know the airport; Polish origins are PL.
+        cc = city["cc"] if city else ("PL" if iata in ORIGINS else c.get("countryCode"))
+        if cc not in TZ:
+            log.warning("Wizz Air: no time zone for %s (%s), arrival estimated in Polish time", iata, cc)
+        return {"lat": c.get("latitude"), "lon": c.get("longitude"), "cc": cc, "name": c.get("shortName")}
 
     def routes(self, origin: str) -> dict[str, dict]:
         st = self.stations()
@@ -114,13 +141,16 @@ class WizzAir:
 
     def round_trips(self, origin: str, dest: str, out_from: date, out_to: date,
                     back_to: date, nights_min: int, nights_max: int) -> list[dict]:
+        self._check_breaker()
         outs: dict[date, tuple[str, float]] = {}
         backs: dict[date, tuple[str, float]] = {}
         failures: list[str] = []
         windows = 0
+        # Outbound window sized so that the return leg (window + longest stay) stays within MAX_SPAN_DAYS.
+        window_days = max(7, MAX_SPAN_DAYS - (nights_max + 1) + 1)
         start = out_from
         while start <= out_to:
-            end = min(start + timedelta(days=WINDOW_DAYS - 1), out_to)
+            end = min(start + timedelta(days=window_days - 1), out_to)
             back_end = min(end + timedelta(days=nights_max + 1), back_to)
             body = {"flightList": [
                 {"departureStation": origin, "arrivalStation": dest, "from": start.isoformat(), "to": end.isoformat()},
@@ -135,7 +165,13 @@ class WizzAir:
             windows += 1
             start = end + timedelta(days=1)
         if failures and len(failures) == windows:
+            self._consecutive_failures += 1
+            if self._consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                self._failed = f"Wizz Air: {MAX_CONSECUTIVE_FAILURES} trasy z rzędu bez odpowiedzi, pozostałe pominięte ({failures[0][:80]})"
             raise RuntimeError(failures[0])
+        self._consecutive_failures = 0
+        if failures:
+            self.partial_errors.append(f"Wizz Air {origin}-{dest}: {len(failures)}/{windows} okien dat bez danych ({failures[0][:80]})")
         return self._pair(origin, dest, outs, backs, nights_min, nights_max)
 
     def _headers(self) -> dict:

@@ -10,13 +10,20 @@ from .scoring import deal_score, discount_vs_typical
 from .trip import hours_on_ground, stay_dates
 
 
+def route_key(c: dict) -> str:
+    """One price history per carrier: Wizz and Ryanair fares on the same route must not share a median
+    (it made a Ryanair fare look 44% cheaper instead of 19% on 2026-09-26). Ryanair keeps the old key."""
+    code = c.get("carrier_code") or "FR"
+    return f"{c['origin']}-{c['dest']}" + ("" if code == "FR" else f"-{code}")
+
+
 def typical_fares(combos: list[dict]) -> dict[str, float]:
-    """Median round-trip fare per person for each route across all dates in the search window.
+    """Median round-trip fare per person for each route and carrier across all dates in the search window.
     "This date is 40% cheaper than a typical date on this route" is the promo signal on day one;
     later runs blend in the stored history (see history.py)."""
     by_route: dict[str, list[float]] = {}
     for c in combos:
-        by_route.setdefault(f"{c['origin']}-{c['dest']}", []).append(c["fare_pp"])
+        by_route.setdefault(route_key(c), []).append(c["fare_pp"])
     return {r: float(statistics.median(v)) for r, v in by_route.items() if len(v) >= 5}
 
 
@@ -38,7 +45,7 @@ def build_candidates(combos: list[dict], cities: dict[str, dict], typical: dict[
         bags = bag_estimate(c)
         est_total = c["fare_total"] + bags[s.default_bag]["total"] + city["hotel_night"] * nights
         on_ground = hours_on_ground(c["out_arr"], c["back_dep"])
-        typ = typical.get(f"{c['origin']}-{c['dest']}")
+        typ = typical.get(route_key(c))
         disc = discount_vs_typical(c["fare_pp"], typ)
         out.append({**c, "city": city, "check_in": check_in, "check_out": check_out, "nights": nights,
                     "lead_days": lead, "on_ground_h": on_ground, "discount_pct": disc, "bags": bags,

@@ -214,7 +214,7 @@ function boardHTML(top, data, count) {
     </header>
     <div class="board-cols" aria-hidden="true"><span>Wylot</span><span>Kierunek</span><span>2 os.</span><span></span></div>
     <ol class="board-rows">${rows}</ol>
-    <p class="board-foot">Cena za 2 osoby: loty w obie strony, ${esc(bagPhrase(state.filters.bag))}${state.filters.bag === 'small' ? '' : ' (szacunek)'} i nocleg na cały pobyt.</p>
+    <p class="board-foot">Cena za 2 osoby: loty w obie strony, ${esc(bagPhrase(state.filters.bag))}${state.filters.bag === 'small' ? '' : ' (szacunek)'} i nocleg na cały pobyt.${top.some((d) => d.flight.two_seats_confirmed === false) ? ' Przy Wizz Air lot to 2 × cena za osobę (szacunek).' : ''}</p>
   </section>`;
 }
 function runFlaps(root, animate) {
@@ -272,7 +272,8 @@ function priceParts(deal, bagKey) {
   const bag = deal.flight.bags?.[bagKey] || {};
   const flight = deal.flight.fare_total + (bag.total || 0);
   const stay = deal.stay?.price_total || 0;
-  return { flight, stay, total: flight + stay, est: Boolean(bag.estimated) };
+  const perPerson = deal.flight.two_seats_confirmed === false;   // Wizz Air: 2 × price per person, no 2-seat guarantee
+  return { flight, stay, total: flight + stay, est: Boolean(bag.estimated) || perPerson, bagEst: Boolean(bag.estimated), perPerson };
 }
 const approx = (v, est) => `${est ? '<small class="approx">ok.</small>' : ''}${pln(v)}`;
 function sumHTML(deal, bagKey, cls = '') {
@@ -281,7 +282,7 @@ function sumHTML(deal, bagKey, cls = '') {
   const aria = `Lot ${about}${pln(p.flight)} plus nocleg ${pln(p.stay)} równa się ${about}${pln(p.total)} za 2 osoby`;
   return `
   <div class="eq ${cls}" role="group" aria-label="${esc(aria)}">
-    <div class="eq-part"><span class="eq-label">Lot</span><span class="eq-val num">${approx(p.flight, p.est)}</span><span class="eq-note">${esc(bagPhrase(bagKey))}${p.est ? ' (szac.)' : ''}</span></div>
+    <div class="eq-part"><span class="eq-label">Lot</span><span class="eq-val num">${approx(p.flight, p.est)}</span><span class="eq-note">${esc(bagPhrase(bagKey))}${p.bagEst ? ' (szac.)' : ''}${p.perPerson ? ' · 2 × cena za os.' : ''}</span></div>
     <span class="eq-op" aria-hidden="true">+</span>
     <div class="eq-part"><span class="eq-label">Nocleg</span><span class="eq-val num">${pln(p.stay)}</span><span class="eq-note">${deal.stay ? nightsLabel(deal.stay.nights) : ''}</span></div>
     <span class="eq-op" aria-hidden="true">=</span>
@@ -480,7 +481,7 @@ async function renderDeal(date, id) {
           ${bagInfo.estimated ? `<p class="fineprint">${esc(bagInfo.basis || 'Cena bagażu jest szacunkiem na podstawie cennika przewoźnika.')} Dokładną kwotę zobaczysz przy zakupie.</p>` : ''}
         </div>
         <ul class="lines num">
-          <li><span>Bilety dla 2 osób (taryfa podstawowa)</span><span>${pln(deal.flight.fare_total)}</span></li>
+          <li><span>Bilety dla 2 osób (${deal.flight.two_seats_confirmed === false ? '2 × cena za osobę z rozkładu' : 'taryfa podstawowa'})</span><span>${deal.flight.two_seats_confirmed === false ? '~' : ''}${pln(deal.flight.fare_total)}</span></li>
           <li><span>Bagaż: ${esc(bags[bagKey]?.short || '')}${bagInfo.estimated ? ' (szacunek)' : ''}</span><span>${bagInfo.total ? `${bagInfo.estimated ? '~' : ''}${pln(bagInfo.total)}` : '0 zł'}</span></li>
           <li class="sum"><span>Lot razem</span><span>${bagInfo.estimated ? '~' : ''}${pln(flightTotal)}</span></li>
         </ul>
@@ -488,7 +489,7 @@ async function renderDeal(date, id) {
           ${bookFlight ? `<a class="btn btn-primary btn-block" href="${esc(bookFlight)}" target="_blank" rel="noopener">${icon('external-link')}Kup lot w ${esc(deal.flight.carrier)}</a>` : ''}
           ${compare ? `<a class="btn btn-ghost btn-block" href="${esc(compare)}" target="_blank" rel="noopener">Porównaj w Google Flights</a>` : ''}
         </div>
-        <p class="fineprint">Link otwiera wyszukiwarkę przewoźnika z tymi datami, lotniskami i 2 dorosłymi. Bagaż dodajesz w trakcie rezerwacji.</p>
+        <p class="fineprint">${deal.flight.carrier_code === 'W6' ? 'Link otwiera wyszukiwarkę Wizz Air z tymi datami i lotniskami; sprawdź na stronie, czy ustawiło się 2 dorosłych.' : 'Link otwiera wyszukiwarkę przewoźnika z tymi datami, lotniskami i 2 dorosłymi.'} Bagaż dodajesz w trakcie rezerwacji.</p>
         ${deal.flight.two_seats_confirmed === false ? `<p class="fineprint">${esc(deal.flight.carrier)} podaje w rozkładzie cenę za osobę, więc cena lotu to 2 × cena z rozkładu i nie ma gwarancji, że w tej taryfie zostały 2 miejsca. Godziny przylotu (~) są szacunkowe. Przy zakupie sprawdź, czy przewoźnik nie dolicza opłaty administracyjnej.</p>` : ''}
       </div>
     </section>
@@ -499,10 +500,10 @@ async function renderDeal(date, id) {
       <h2 class="total-label" id="h-total">Cena całkowita za 2 osoby</h2>
       ${sumHTML(deal, bagKey, 'eq-dark')}
       <ul class="lines num">
-        <li><span>Loty w obie strony</span><span>${pln(deal.flight.fare_total)}</span></li>
+        <li><span>Loty w obie strony${deal.flight.two_seats_confirmed === false ? ' (2 × cena za os.)' : ''}</span><span>${deal.flight.two_seats_confirmed === false ? '~' : ''}${pln(deal.flight.fare_total)}</span></li>
         <li><span>Bagaż: ${esc(bags[bagKey]?.short || '')}${bagInfo.estimated ? ' (szacunek)' : ''}</span><span>${bagInfo.estimated ? '~' : ''}${pln(bagInfo.total || 0)}</span></li>
         ${stay ? `<li><span>Nocleg, ${nightsLabel(stay.nights)}</span><span>${pln(stay.price_total)}</span></li>` : ''}
-        <li class="sum"><span>Razem</span><span>${pln(total(deal, bagKey))}</span></li>
+        <li class="sum"><span>Razem</span><span>${priceParts(deal, bagKey).est ? '~' : ''}${pln(total(deal, bagKey))}</span></li>
       </ul>
       ${bagInfo.estimated ? `<p class="fineprint">W tym szacowany koszt bagażu: ~${pln(bagInfo.total)}. Loty i nocleg to ceny z wyszukiwarek.</p>` : ''}
       <button class="btn btn-block btn-share" type="button" data-action="share" data-id="${esc(deal.id)}" data-date="${esc(dealDate)}">${icon('share-2')}Wyślij do konsultacji</button>
@@ -601,7 +602,7 @@ function renderInfo() {
     <h2>Co jest w cenie</h2>
     <ul>
       <li><b>Loty w obie strony dla 2 osób</b>, według cen z wyszukiwarki przewoźnika.</li>
-      <li><b>Bagaż</b> w wybranym wariancie: sam plecak (w cenie biletu), walizka kabinowa 10 kg dla każdej osoby albo jedna wspólna walizka rejestrowana 20 kg. Cenę bagażu <b>szacujemy</b> ze środka oficjalnego cennika Ryanaira i kursu euro z NBP, bo przewoźnik nie udostępnia jej bez rozpoczęcia rezerwacji. Dokładną kwotę zobaczysz przy zakupie.</li>
+      <li><b>Bagaż</b> w wybranym wariancie: sam plecak (w cenie biletu), walizka kabinowa 10 kg dla każdej osoby albo jedna wspólna walizka rejestrowana 20 kg. Cenę bagażu <b>szacujemy</b> ze środka oficjalnego cennika przewoźnika (Ryanair lub Wizz Air) i kursu euro z NBP, bo przewoźnicy nie podają jej bez rozpoczęcia rezerwacji. Wizz Air podaje w rozkładzie cenę za osobę, więc przy jego lotach cena dla 2 osób też jest szacunkiem. Dokładną kwotę zobaczysz przy zakupie.</li>
       <li><b>Nocleg na cały pobyt</b> dla 2 osób.</li>
     </ul>
     <p>Nie wliczamy dojazdu na lotnisko ani z lotniska do centrum. Przy każdej ofercie jest podpowiedź, jak dojechać.</p>
@@ -729,10 +730,11 @@ function shareText(deal) {
   const bagKey = state.filters.bag;
   const s = deal.stay;
   const origin = state.data?.origins?.[deal.flight.out.from];
-  const estimated = deal.flight.bags?.[bagKey]?.estimated;
+  const p = priceParts(deal, bagKey);
+  const estimated = p.est;
   const lines = [
     `${deal.city.name}, ${rangeLabel(deal.trip.out_date, deal.trip.back_date)} (${nightsLabel(deal.trip.nights)})`,
-    `Lot ${deal.flight.carrier} z ${origin?.city_gen || deal.flight.out.from}, ${bagPhrase(bagKey)}${estimated ? ' (szacunek)' : ''}: ${estimated ? 'ok. ' : ''}${pln(priceParts(deal, bagKey).flight)}`,
+    `Lot ${deal.flight.carrier} z ${origin?.city_gen || deal.flight.out.from}, ${bagPhrase(bagKey)}${p.bagEst ? ' (szacunek)' : ''}${p.perPerson ? ', 2 × cena za osobę' : ''}: ${estimated ? 'ok. ' : ''}${pln(p.flight)}`,
     s ? `+ nocleg ${s.name}${s.rating ? ` (${fmtRating(s.rating)}/10)` : ''}: ${pln(s.price_total)}` : '',
     `= ${estimated ? 'ok. ' : ''}${pln(priceParts(deal, bagKey).total)} za 2 osoby`,
     'Co myślisz?',

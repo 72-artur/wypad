@@ -26,8 +26,14 @@ def nights_pl(n: int) -> str:
     return f"{n} noce" if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14) else f"{n} nocy"
 
 
+def per_person(d: dict) -> bool:
+    """Wizz Air: the fare is 2 × the timetable price per person, without a guarantee of 2 seats."""
+    return (d.get("flight") or {}).get("two_seats_confirmed") is False
+
+
 def estimated(d: dict, bag: str) -> bool:
-    return bool(((d.get("flight") or {}).get("bags") or {}).get(bag, {}).get("estimated"))
+    """True when the total is not a price for 2 as quoted: estimated baggage or a per-person fare × 2."""
+    return bool(((d.get("flight") or {}).get("bags") or {}).get(bag, {}).get("estimated")) or per_person(d)
 
 
 def price_text(d: dict, bag: str) -> str:
@@ -51,7 +57,7 @@ def equation(d: dict, bag: str) -> str:
 def deal_line(d: dict, bag: str) -> str:
     out, back = d["trip"]["out_date"], d["trip"]["back_date"]
     return (f"{d['city']['name']} {out[8:10]}.{out[5:7]}–{back[8:10]}.{back[5:7]} "
-            f"({nights_pl(d['trip']['nights'])}) z {d['flight']['out']['from']}: {equation(d, bag)} za 2 os.")
+            f"({nights_pl(d['trip']['nights'])}) z {d['flight']['out']['from']} ({d['flight']['carrier']}): {equation(d, bag)} za 2 os.")
 
 
 def deal_url(site_url: str, d: dict) -> str:
@@ -92,7 +98,7 @@ def email_html(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
           <div style="font:800 22px/1.2 Arial,sans-serif;color:#121923;margin-top:4px">{html.escape(d['city']['name'])}
             <span style="float:right;color:#cf4f35">{price_text(d, bag)}</span></div>
           <div style="font:14px/1.45 Arial,sans-serif;color:#485365;margin-top:4px">
-            Lot {html.escape(d['flight']['carrier'])} z bagażem {html.escape(bag_label)}{' (szacunek)' if estimated(d, bag) else ''}: {'ok. ' if estimated(d, bag) else ''}{_pln(breakdown(d, bag)[0])}
+            Lot {html.escape(d['flight']['carrier'])} z bagażem {html.escape(bag_label)}{' (szacunek)' if estimated(d, bag) else ''}{', 2 × cena za osobę' if per_person(d) else ''}: {'ok. ' if estimated(d, bag) else ''}{_pln(breakdown(d, bag)[0])}
             + nocleg {html.escape(stay.get('name', ''))}{f" ({stay['rating']:.1f}/10)".replace('.', ',') if stay.get('rating') else ''}: {_pln(breakdown(d, bag)[1])}
             = <b>{price_text(d, bag)}</b> za 2 osoby</div>
           <a href="{url}" style="display:inline-block;margin-top:8px;font:700 14px Arial,sans-serif;color:#2c63a8">Zobacz szczegóły →</a>
@@ -102,7 +108,7 @@ def email_html(deals: list[dict], *, site_url: str, bag: str, bag_label: str, da
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px">
       <tr><td style="padding:22px 24px 6px;background:#121720;border-radius:16px 16px 0 0">
         <div style="font:900 28px/1 Arial Narrow,Arial,sans-serif;color:#ffb547;letter-spacing:.06em">ODLOTY · {html.escape(date_label)}</div>
-        <div style="font:13px/1.5 Arial,sans-serif;color:#8d97a8;padding:6px 0 14px">Ceny za 2 osoby: loty w obie strony, bagaż ({html.escape(bag_label)}; cena bagażu to szacunek z cennika Ryanair) i nocleg na cały pobyt.</div>
+        <div style="font:13px/1.5 Arial,sans-serif;color:#8d97a8;padding:6px 0 14px">Ceny za 2 osoby: loty w obie strony, bagaż ({html.escape(bag_label)}; cena bagażu to szacunek z cennika przewoźnika) i nocleg na cały pobyt.</div>
       </td></tr>
       <tr><td style="padding:4px 24px 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">{''.join(rows)}</table></td></tr>
       <tr><td style="padding:8px 24px 24px;font:13px/1.5 Arial,sans-serif;color:#6f7b8f">

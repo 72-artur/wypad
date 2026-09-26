@@ -37,6 +37,9 @@ def test_wizz_uses_its_own_fee_table_and_peak_season():
     # 20 kg outside the peak: (0 + 112.50) / 2 = 56.25 € → 239 zł per flight
     assert low["checked20"]["per_unit"] == 239 and "Wizz Air" in low["checked20"]["basis"]
     peak = est({"carrier_code": "W6", "out_dep": "2026-12-20T10:00", "back_dep": "2026-12-23T12:00"})
-    assert peak["checked20"]["per_unit"] == round(62 * 4.25) and "szczycie" in peak["checked20"]["basis"]
+    assert peak["checked20"]["total"] == 2 * round(62 * 4.25) and "2 z 2 lotów w szczycie" in peak["checked20"]["basis"]
+    # Only the return flight falls in the peak (from 15 Dec): one leg at the peak price, one at the normal price
+    half = est({"carrier_code": "W6", "out_dep": "2026-12-12T10:00", "back_dep": "2026-12-15T12:00"})
+    assert half["checked20"]["total"] == round(56.25 * 4.25) + round(62 * 4.25) and "1 z 2 lotów" in half["checked20"]["basis"]
     ryanair = est({"carrier_code": "FR", "out_dep": "2026-12-20T10:00", "back_dep": "2026-12-23T12:00"})
     assert ryanair["cabin10"]["per_unit"] == 103 and "Ryanair" in ryanair["cabin10"]["basis"]

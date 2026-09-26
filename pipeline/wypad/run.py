@@ -149,9 +149,12 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
     # Wizz Air is a bonus: if it is down or blocks the runner, Ryanair deals are still published.
     wz_combos, wz_errors, wn = [], [], {"requests": 0}
     if "W6" in s.carriers:
-        wz_combos, wz_errors, wn = collect_flights(wizz or WizzAir(http), s, today)
+        # Shorter timeouts and fewer retries than Ryanair: a slow Wizz must not stall the whole run.
+        wz = wizz or WizzAir(Http(delay_s=s.request_delay_s, retries=2, timeout=15))
+        wz_combos, wz_errors, wn = collect_flights(wz, s, today)
+        wz_errors += getattr(wz, "partial_errors", [])
         log.info("Wizz Air: %d combinations, %d errors", len(wz_combos), len(wz_errors))
-    combos, errors = ry_combos + wz_combos, ry_errors + wz_errors
+    combos, errors = ry_combos + wz_combos, list(ry_errors)   # Wizz errors are listed last, after trivago's
 
     stored = history.load_fares(state_dir)
     today_typical = typical_fares(combos)
@@ -200,7 +203,7 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
         "stats": {
             "flight_options": len(combos), "candidates": len(cands), "hotel_searches": len(picked),
             "http_calls": http.calls + getattr(tv, "calls", 0), "duration_s": round(time.monotonic() - t0),
-            "errors": errors[:20],
+            "errors": (errors + wz_errors)[:30],
             "sources": [
                 {"name": "Ryanair", "role": "Ceny i godziny lotów dla 2 dorosłych (wyszukiwarka ryanair.com)",
                  "status": f"{len(ry_combos)} kombinacji, {n['requests'] - len(ry_errors)}/{n['requests']} zapytań OK"},
@@ -208,7 +211,7 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
                  "status": (f"{len(wz_combos)} kombinacji, {wn['requests'] - len(wz_errors)}/{wn['requests']} zapytań OK"
                             if wn["requests"] and len(wz_errors) < wn["requests"] else
                             ("wyłączony" if "W6" not in s.carriers else f"niedostępny ({(wz_errors or ['brak danych'])[0][:80]})"))},
-                {"name": "Cennik Ryanair + NBP", "role": "Szacunek ceny bagażu", "status": f"1 € = {rate:.2f} zł".replace(".", ",")},
+                {"name": "Cenniki Ryanair i Wizz Air + NBP", "role": "Szacunek ceny bagażu", "status": f"1 € = {rate:.2f} zł".replace(".", ",")},
                 {"name": "trivago", "role": "Noclegi: cena za pobyt, ocena, zdjęcie",
                  "status": f"{len(picked) - stay_errors}/{len(picked)} wyszukiwań OK" + (f", {no_stay} bez noclegu spełniającego kryteria" if no_stay else "")},
                 {"name": "Open-Meteo", "role": "Prognoza lub średnia pogoda", "status": f"{weather_ok}/{len(deals)} ofert"},

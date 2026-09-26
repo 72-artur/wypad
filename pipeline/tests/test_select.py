@@ -61,3 +61,15 @@ def test_shortlist_is_diverse_and_skips_overlapping_dates():
     bgy = sorted(c["out_dep"][:10] for c in picked if c["dest"] == "BGY")
     assert bgy == ["2026-10-06", "2026-10-20"]
     assert {c["dest"] for c in picked} == {"BGY", "CIA", "BCN"}
+
+
+def test_typical_fare_is_kept_per_carrier():
+    fr = [combo("LTN", "2026-10-%02d" % d, "2026-10-%02d" % (d + 3), 190) for d in range(1, 6)]
+    wz = [{**combo("LTN", "2026-10-%02d" % d, "2026-10-%02d" % (d + 3), 360), "carrier_code": "W6"} for d in range(1, 6)]
+    typ = typical_fares(fr + wz)
+    assert typ == {"POZ-LTN": 190.0, "POZ-LTN-W6": 360.0}
+    # A Ryanair fare is compared only with Ryanair prices on that route
+    s = Settings()
+    cheap_fr = combo("LTN", "2026-10-16", "2026-10-19", 95)
+    c = build_candidates([cheap_fr], {"LTN": city_for_airport("LTN")}, typ, bags, s, TODAY)[0]
+    assert c["discount_pct"] == 50 and c["typical_pp"] == 190

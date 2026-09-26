@@ -87,3 +87,14 @@ def test_build_climate_skips_cached_cities(tmp_path):
     s = FakeSession()
     cache = build_climate(tmp_path, cities, TODAY, session=s, pause_s=0)
     assert set(cache) == {"a", "b"} and len(s.calls) == 1
+
+
+def test_every_destination_city_has_a_full_year_of_climate():
+    """Adding a city to destinations.py without running `python -m wypad climate` would leave it
+    without weather on GitHub (the archive API times out there)."""
+    from pathlib import Path
+
+    from wypad.destinations import CITIES
+    climate = json.loads((Path(__file__).resolve().parents[2] / "state" / "climate.json").read_text())
+    missing = [k for k in CITIES if len(climate.get(k, {})) != 12]
+    assert missing == []

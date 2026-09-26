@@ -5,3 +5,6 @@ __pycache__/
 pipeline/.venv/
 *.tmp
 .claude/
+# iCloud Drive conflict copies ("plik 2.py")
+* 2.*
+* 2

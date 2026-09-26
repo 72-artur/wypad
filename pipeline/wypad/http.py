@@ -12,12 +12,13 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
 
 
 class Http:
-    def __init__(self, delay_s: float = 1.0, retries: int = 3):
+    def __init__(self, delay_s: float = 1.0, retries: int = 3, timeout: float = 30):
         self.s = requests.Session()
         self.s.headers.update({"User-Agent": UA, "Accept": "application/json, text/plain, */*",
                                "Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8"})
         self.delay_s = delay_s
         self.retries = retries
+        self.timeout = timeout
         self.calls = 0
         self._last = 0.0
 
@@ -29,10 +30,12 @@ class Http:
 
     def _request(self, method: str, url: str, parse, **kw):
         last_err: Exception | None = None
-        timeout = kw.pop("timeout", 30)
+        timeout = kw.pop("timeout", self.timeout)
+        attempts = 0
         for attempt in range(self.retries):
             self._wait()
             self.calls += 1
+            attempts += 1
             try:
                 r = self.s.request(method, url, timeout=timeout, **kw)
                 if r.status_code in (429, 500, 502, 503, 504):
@@ -44,10 +47,11 @@ class Http:
                 status = getattr(getattr(e, "response", None), "status_code", None)
                 if status is not None and 400 <= status < 500 and status != 429:
                     break                      # a client error will not fix itself on retry
-                backoff = 2 ** attempt * 3
-                log.info("%s %s failed (%s), retry in %ss", method, url, e, backoff)
-                time.sleep(backoff)
-        raise RuntimeError(f"{method} {url} failed after {self.retries} attempts: {last_err}")
+                if attempt < self.retries - 1:
+                    backoff = 2 ** attempt * 3
+                    log.info("%s %s failed (%s), retry in %ss", method, url, e, backoff)
+                    time.sleep(backoff)
+        raise RuntimeError(f"{method} {url} failed after {attempts} attempt(s): {last_err}")
 
     def get_json(self, url: str, params: dict | None = None, **kw):
         return self._request("GET", url, lambda r: r.json(), params=params, **kw)

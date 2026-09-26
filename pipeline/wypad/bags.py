@@ -45,14 +45,19 @@ def in_wizz_peak(d: str) -> bool:
     return md >= WIZZ_PEAK[0] or md <= WIZZ_PEAK[1]
 
 
-def _bags(code: str, peak: bool, rate: float, rate_label: str) -> dict:
+def _bags(code: str, out_peak: bool, back_peak: bool, rate: float, rate_label: str) -> dict:
     fees = FEES_EUR.get(code, FEES_EUR["FR"])
     p_lo, p_hi = fees["priority"]
-    c_lo, c_hi = fees["checked20_peak"] if peak and "checked20_peak" in fees else fees["checked20"]
     priority = round((p_lo + p_hi) / 2 * rate)
-    checked = round((c_lo + c_hi) / 2 * rate)
+
+    def checked_leg(peak: bool) -> tuple[int, tuple[float, float]]:
+        lo, hi = fees["checked20_peak"] if peak and "checked20_peak" in fees else fees["checked20"]
+        return round((lo + hi) / 2 * rate), (lo, hi)
+
+    (c_out, (c_lo, c_hi)), (c_back, _) = checked_leg(out_peak), checked_leg(back_peak)
     fx = f"{rate_label}: 1 € = {rate:.2f} zł".replace(".", ",")
-    season = " w szczycie świątecznym" if peak and "checked20_peak" in fees else ""
+    peak_legs = sum((out_peak, back_peak)) if "checked20_peak" in fees else 0
+    season = f" ({peak_legs} z 2 lotów w szczycie świątecznym: {_fmt_eur(fees['checked20_peak'][0])}–{_fmt_eur(fees['checked20_peak'][1])} €)" if peak_legs else ""
     return {
         "small": {"total": 0, "estimated": False,
                   "note": "Każda osoba: mały bagaż pod siedzenie (40×30×20 cm). Jest w cenie biletu."},
@@ -61,9 +66,9 @@ def _bags(code: str, peak: bool, rate: float, rate_label: str) -> dict:
                               f"({_fmt_eur(p_lo)}–{_fmt_eur(p_hi)} € za osobę za lot), czyli ok. {priority} zł "
                               f"× 2 osoby × 2 loty ({fx})."),
                     "note": f"Każda osoba: mały bagaż pod siedzenie + walizka kabinowa 10 kg ({'WIZZ Priority' if code == 'W6' else 'Priority & 2 Cabin Bags'})."},
-        "checked20": {"total": 2 * checked, "estimated": True, "per_unit": checked,
-                      "basis": (f"Szacunek: środek cennika {fees['name']} za walizkę rejestrowaną 20 kg{season} "
-                                f"({_fmt_eur(c_lo)}–{_fmt_eur(c_hi)} € za lot), czyli ok. {checked} zł × 2 loty, "
+        "checked20": {"total": c_out + c_back, "estimated": True, "per_unit": c_out,
+                      "basis": (f"Szacunek: środek cennika {fees['name']} za walizkę rejestrowaną 20 kg "
+                                f"({_fmt_eur(c_lo)}–{_fmt_eur(c_hi)} € za lot{season}), razem ok. {c_out + c_back} zł za 2 loty, "
                                 f"jedna walizka na 2 osoby ({fx})."),
                       "note": "Każda osoba: mały bagaż pod siedzenie + jedna wspólna walizka rejestrowana 20 kg na dwie osoby."},
     }
@@ -77,8 +82,10 @@ def estimator(rate: float, rate_label: str):
 
     def estimate(combo: dict) -> dict:
         code = combo.get("carrier_code") or "FR"
-        peak = code == "W6" and (in_wizz_peak(combo["out_dep"]) or in_wizz_peak(combo["back_dep"]))
-        if (code, peak) not in cache:
-            cache[(code, peak)] = _bags(code, peak, rate, rate_label)
-        return cache[(code, peak)]
+        out_peak = code == "W6" and in_wizz_peak(combo["out_dep"])
+        back_peak = code == "W6" and in_wizz_peak(combo["back_dep"])
+        key = (code, out_peak, back_peak)
+        if key not in cache:
+            cache[key] = _bags(code, out_peak, back_peak, rate, rate_label)
+        return cache[key]
     return estimate

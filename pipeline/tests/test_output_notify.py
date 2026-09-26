@@ -1,0 +1,135 @@
+import json
+from datetime import date
+
+from wypad import notify
+from wypad.output import prune, publish, share_page
+
+
+def make_deal(**over):
+    d = {
+        "id": "poz-bcn-20261016-20261019",
+        "city": {"name": "Barcelona", "key": "barcelona"},
+        "trip": {"out_date": "2026-10-16", "back_date": "2026-10-19", "nights": 3},
+        "flight": {"carrier": "Ryanair", "out": {"from": "POZ", "from_city": "Poznań", "to": "BCN"}, "fare_total": 578,
+                   "bags": {"cabin10": {"total": 236}}},
+        "stay": {"name": "Hotel <Test> & Co", "rating": 8.4, "price_total": 1180, "image": "https://example.com/h.jpg"},
+        "totals": {"small": 1758, "cabin10": 1994, "checked20": 2076},
+    }
+    d.update(over)
+    return d
+
+
+def test_share_page_has_og_tags_escaping_and_redirect():
+    page = share_page(make_deal(), day="2026-09-25", site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg")
+    assert '<meta property="og:title" content="Barcelona 16.10–19.10: 1994 zł za 2 osoby">' in page
+    assert "Hotel &lt;Test&gt; &amp; Co (8,4/10)" in page          # third-party text is escaped
+    assert '<meta property="og:image" content="https://example.com/h.jpg">' in page
+    assert 'content="0; url=../../#/d/2026-09-25/poz-bcn-20261016-20261019"' in page
+    assert "https://u.github.io/wypad/d/2026-09-25/poz-bcn-20261016-20261019.html" in page
+
+
+def test_publish_writes_today_archive_and_pages(tmp_path):
+    payload = {"date": "2026-09-25", "deals": [make_deal()]}
+    publish(tmp_path, payload, site_url="", bag="cabin10", bag_label="10 kg", keep_days=60)
+    today = json.loads((tmp_path / "data/deals.json").read_text())
+    assert today["deals"][0]["share_path"] == "d/2026-09-25/poz-bcn-20261016-20261019.html"
+    assert (tmp_path / "data/archive/2026-09-25.json").exists()
+    assert (tmp_path / "d/2026-09-25/poz-bcn-20261016-20261019.html").exists()
+
+
+def test_prune_removes_only_old_days(tmp_path):
+    for day in ("2026-07-01", "2026-09-24"):
+        (tmp_path / "data/archive").mkdir(parents=True, exist_ok=True)
+        (tmp_path / f"data/archive/{day}.json").write_text("{}")
+        (tmp_path / f"d/{day}").mkdir(parents=True)
+        (tmp_path / f"d/{day}/x.html").write_text("x")
+    prune(tmp_path, today=date(2026, 9, 25), keep_days=60)
+    assert not (tmp_path / "data/archive/2026-07-01.json").exists()
+    assert not (tmp_path / "d/2026-07-01").exists()
+    assert (tmp_path / "data/archive/2026-09-24.json").exists()
+    assert (tmp_path / "d/2026-09-24/x.html").exists()
+
+
+def test_notifications_are_skipped_without_secrets(monkeypatch):
+    for k in ("NTFY_TOPIC", "SMTP_USER", "SMTP_PASSWORD", "MAIL_TO"):
+        monkeypatch.delenv(k, raising=False)
+    assert notify.notify_all([make_deal()], site_url="", bag="cabin10", bag_label="10 kg", date_label="25.09") == {
+        "ntfy": "skipped", "email": "skipped"}
+
+
+def test_ntfy_payload(monkeypatch):
+    sent = {}
+
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+    def fake_post(url, data, headers, timeout):
+        sent.update(url=url, body=data.decode(), headers=headers)
+        return Resp()
+
+    monkeypatch.setattr(notify.requests, "post", fake_post)
+    d = make_deal(share_path="d/2026-09-25/poz-bcn-20261016-20261019.html")
+    assert notify.push_ntfy([d], topic="wypad-abc", site_url="https://u.github.io/wypad", bag="cabin10", date_label="25.09")
+    assert sent["url"] == "https://ntfy.sh/wypad-abc"
+    assert sent["body"] == "Barcelona 16.10–19.10 (3 noce) z POZ: 1994 zł za 2 os."
+    assert sent["headers"]["Click"] == "https://u.github.io/wypad/d/2026-09-25/poz-bcn-20261016-20261019.html"
+    assert sent["headers"]["Title"].decode() == "Wypad 25.09: Barcelona za 1994 zł"
+
+
+def test_email_failure_does_not_raise(monkeypatch):
+    monkeypatch.setenv("SMTP_USER", "a@gmail.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "x")
+    monkeypatch.setenv("MAIL_TO", "b@gmail.com")
+    monkeypatch.delenv("NTFY_TOPIC", raising=False)
+
+    def boom(*a, **k):
+        raise OSError("smtp down")
+
+    monkeypatch.setattr(notify.smtplib, "SMTP_SSL", boom)
+    res = notify.notify_all([make_deal()], site_url="", bag="cabin10", bag_label="10 kg", date_label="25.09")
+    assert res == {"ntfy": "skipped", "email": "error: OSError"}
+
+
+def test_polish_plural_and_price_format():
+    assert [notify.nights_pl(n) for n in (1, 2, 4, 5, 12, 22)] == ["1 noc", "2 noce", "4 noce", "5 nocy", "12 nocy", "22 noce"]
+    assert notify._pln(1994) == "1994 zł" and notify._pln(12345) == "12 345 zł"
+
+
+def test_icloud_smtp_uses_starttls_on_587(monkeypatch):
+    events = []
+
+    class FakeSMTP:
+        def __init__(self, host, port, timeout):
+            events.append(("connect", host, port))
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def starttls(self, context):
+            events.append(("starttls",))
+
+        def login(self, u, p):
+            events.append(("login", u))
+
+        def send_message(self, msg):
+            events.append(("send", msg["To"], msg["Subject"]))
+
+    monkeypatch.setattr(notify.smtplib, "SMTP", FakeSMTP)
+    ok = notify.send_email([make_deal()], site_url="https://u.github.io/wypad", bag="cabin10", bag_label="10 kg",
+                           date_label="25.09", smtp_user="artur@icloud.com", smtp_password="x", mail_to="a@b.pl",
+                           smtp_host="smtp.mail.me.com", smtp_port="587")
+    assert ok
+    assert events[0] == ("connect", "smtp.mail.me.com", 587)
+    assert events[1] == ("starttls",) and events[2] == ("login", "artur@icloud.com")
+    assert events[3] == ("send", "a@b.pl", "Wypad 25.09: Barcelona za 1994 zł")
+
+
+def test_same_day_rerun_removes_pages_of_deals_that_disappeared(tmp_path):
+    publish(tmp_path, {"date": "2026-09-25", "deals": [make_deal(id="old-deal")]}, site_url="", bag="cabin10", bag_label="10 kg", keep_days=60)
+    publish(tmp_path, {"date": "2026-09-25", "deals": [make_deal(id="new-deal")]}, site_url="", bag="cabin10", bag_label="10 kg", keep_days=60)
+    assert not (tmp_path / "d/2026-09-25/old-deal.html").exists()
+    assert (tmp_path / "d/2026-09-25/new-deal.html").exists()

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wypad — okazje na city break</title>
+  <meta name="description" content="Codziennie rano: najtańsze city breaki z Poznania i okolic. Lot, bagaż i nocleg dla 2 osób w jednej cenie.">
+  <meta name="theme-color" content="#ECF0F5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0C1117" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Wypad">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Wypad — okazje na city break">
+  <meta property="og:description" content="Codziennie rano: najtańsze city breaki z Poznania i okolic. Lot, bagaż i nocleg dla 2 osób w jednej cenie.">
+  <meta property="og:image" content="icons/og-default.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Przejdź do treści</a>
+
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="Wypad — strona główna">
+      <span class="brand-tile" aria-hidden="true">W</span>
+      <span class="brand-word">Wypad</span>
+    </a>
+    <nav class="topnav" aria-label="Główne">
+      <a class="navbtn" href="#/zapisane" data-nav="saved">
+        <svg class="ico" aria-hidden="true"><use href="icons/sprite.svg#i-heart"/></svg>
+        <span>Zapisane</span><span class="navcount" data-saved-count hidden></span>
+      </a>
+      <a class="navbtn" href="#/info" data-nav="info">
+        <svg class="ico" aria-hidden="true"><use href="icons/sprite.svg#i-info"/></svg>
+        <span>Jak to działa</span>
+      </a>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div class="loading" role="status">
+      <span class="brand-tile spin" aria-hidden="true">W</span>
+      <span>Wczytuję dzisiejsze okazje…</span>
+    </div>
+  </main>
+
+  <dialog class="sheet" id="filters" aria-labelledby="filters-title">
+    <form method="dialog" class="sheet-inner">
+      <header class="sheet-head">
+        <h2 id="filters-title">Filtry</h2>
+        <button class="iconbtn" value="close" aria-label="Zamknij filtry">
+          <svg class="ico" aria-hidden="true"><use href="icons/sprite.svg#i-x"/></svg>
+        </button>
+      </header>
+      <div class="sheet-body" data-filters-body></div>
+      <footer class="sheet-foot">
+        <button type="button" class="btn btn-ghost" data-action="reset-filters">Wyczyść</button>
+        <button class="btn btn-primary" value="apply" data-apply-label>Pokaż oferty</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p class="noscript">Wypad potrzebuje włączonego JavaScriptu.</p></noscript>
+</body>
+</html>

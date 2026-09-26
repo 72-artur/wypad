@@ -1,0 +1,276 @@
+{
+ "fares": [
+  {
+   "outbound": {
+    "departureAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "departureDate": "2026-10-25T23:15:00",
+    "arrivalDate": "2026-10-26T00:55:00",
+    "price": {
+     "value": 131.4,
+     "valueMainUnit": "131",
+     "valueFractionalUnit": "40",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7679~ ~~POZ~10/25/2026 23:15~ARN~10/26/2026 00:55~~",
+    "flightNumber": "FR7679",
+    "previousPrice": null,
+    "priceUpdated": 1790350866000
+   },
+   "inbound": {
+    "departureAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "departureDate": "2026-10-26T09:05:00",
+    "arrivalDate": "2026-10-26T10:40:00",
+    "price": {
+     "value": 134.2,
+     "valueMainUnit": "134",
+     "valueFractionalUnit": "20",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7678~ ~~ARN~10/26/2026 09:05~POZ~10/26/2026 10:40~~",
+    "flightNumber": "FR7678",
+    "previousPrice": null,
+    "priceUpdated": 1790339244000
+   },
+   "summary": {
+    "price": {
+     "value": 265.6,
+     "valueMainUnit": "265",
+     "valueFractionalUnit": "60",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "previousPrice": null,
+    "newRoute": false,
+    "tripDurationDays": 1
+   }
+  },
+  {
+   "outbound": {
+    "departureAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "departureDate": "2026-10-10T17:00:00",
+    "arrivalDate": "2026-10-10T18:35:00",
+    "price": {
+     "value": 136.84,
+     "valueMainUnit": "136",
+     "valueFractionalUnit": "84",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7679~ ~~POZ~10/10/2026 17:00~ARN~10/10/2026 18:35~~",
+    "flightNumber": "FR7679",
+    "previousPrice": null,
+    "priceUpdated": 1790339427000
+   },
+   "inbound": {
+    "departureAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "departureDate": "2026-10-15T12:20:00",
+    "arrivalDate": "2026-10-15T13:55:00",
+    "price": {
+     "value": 134.46,
+     "valueMainUnit": "134",
+     "valueFractionalUnit": "46",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7678~ ~~ARN~10/15/2026 12:20~POZ~10/15/2026 13:55~~",
+    "flightNumber": "FR7678",
+    "previousPrice": null,
+    "priceUpdated": 1790339291000
+   },
+   "summary": {
+    "price": {
+     "value": 271.3,
+     "valueMainUnit": "271",
+     "valueFractionalUnit": "30",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "previousPrice": null,
+    "newRoute": false,
+    "tripDurationDays": 5
+   }
+  },
+  {
+   "outbound": {
+    "departureAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "departureDate": "2026-10-01T10:15:00",
+    "arrivalDate": "2026-10-01T11:50:00",
+    "price": {
+     "value": 130.0,
+     "valueMainUnit": "130",
+     "valueFractionalUnit": "00",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7679~ ~~POZ~10/01/2026 10:15~ARN~10/01/2026 11:50~~",
+    "flightNumber": "FR7679",
+    "previousPrice": null,
+    "priceUpdated": 1790338833000
+   },
+   "inbound": {
+    "departureAirport": {
+     "countryName": "Szwecja",
+     "iataCode": "ARN",
+     "name": "Sztokholm Arlanda",
+     "seoName": "stockholm-arlandia",
+     "city": {
+      "code": "STOCKHOLM",
+      "countryCode": "se",
+      "macCode": "SLM",
+      "name": "Sztokholm"
+     }
+    },
+    "arrivalAirport": {
+     "countryName": "Polska",
+     "iataCode": "POZ",
+     "name": "Poznań",
+     "seoName": "poznan",
+     "city": {
+      "code": "POZNAN",
+      "countryCode": "pl",
+      "name": "Poznań"
+     }
+    },
+    "departureDate": "2026-10-03T15:00:00",
+    "arrivalDate": "2026-10-03T16:35:00",
+    "price": {
+     "value": 150.88,
+     "valueMainUnit": "150",
+     "valueFractionalUnit": "88",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "flightKey": "FR~7678~ ~~ARN~10/03/2026 15:00~POZ~10/03/2026 16:35~~",
+    "flightNumber": "FR7678",
+    "previousPrice": null,
+    "priceUpdated": 1790352373000
+   },
+   "summary": {
+    "price": {
+     "value": 280.88,
+     "valueMainUnit": "280",
+     "valueFractionalUnit": "88",
+     "currencyCode": "PLN",
+     "currencySymbol": "zł"
+    },
+    "previousPrice": null,
+    "newRoute": false,
+    "tripDurationDays": 2
+   }
+  }
+ ],
+ "nextPage": null,
+ "size": 3
+}

@@ -1,5 +1,5 @@
 """Weather for the trip dates from Open-Meteo (free, no key): forecast when the trip starts within
-~2 weeks, otherwise the 5-year average for the same calendar days ("średnio o tej porze")."""
+~2 weeks, otherwise the average of the same calendar days in the last 3 years ("średnio o tej porze")."""
 from __future__ import annotations
 
 import logging
@@ -10,7 +10,11 @@ import requests
 
 log = logging.getLogger(__name__)
 FORECAST_DAYS = 15
-_ARCHIVE: dict[tuple, dict] = {}  # (lat, lon) → daily history; one download per city per run
+YEARS_BACK = 3
+ARCHIVE_TIMEOUT_S = 15
+# (lat, lon, start, end) → daily history. Small per-year windows: one 5-year request timed out
+# repeatedly from GitHub's runners (2026-09-26), a few days per year answers in well under a second.
+_ARCHIVE: dict[tuple, dict] = {}
 
 WMO_PL = [
     ((0,), "słonecznie", "sun"),
@@ -66,6 +70,13 @@ def summarize_climate(daily: dict, start: date, end: date) -> dict | None:
             "text": f"średnio o tej porze, deszcz w {wet_pct}% dni", "icon": "cloud-rain" if wet_pct >= 40 else "cloud-sun"}
 
 
+def _years_earlier(d: date, years: int) -> date:
+    try:
+        return d.replace(year=d.year - years)
+    except ValueError:                          # 29 February
+        return d.replace(year=d.year - years, day=28)
+
+
 def trip_weather(lat: float, lon: float, start: date, end: date, today: date, session=requests) -> dict | None:
     try:
         if (start - today).days <= FORECAST_DAYS - (end - start).days - 1:
@@ -75,13 +86,26 @@ def trip_weather(lat: float, lon: float, start: date, end: date, today: date, se
                 "start_date": start.isoformat(), "end_date": end.isoformat()})
             r.raise_for_status()
             return summarize_forecast(r.json().get("daily", {}))
-        if (lat, lon) not in _ARCHIVE:
-            r = session.get("https://archive-api.open-meteo.com/v1/archive", timeout=30, params={
-                "latitude": lat, "longitude": lon, "timezone": "auto", "daily": "temperature_2m_max,precipitation_sum",
-                "start_date": date(today.year - 5, 1, 1).isoformat(), "end_date": (today - timedelta(days=7)).isoformat()})
-            r.raise_for_status()
-            _ARCHIVE[(lat, lon)] = r.json().get("daily", {})
-        return summarize_climate(_ARCHIVE[(lat, lon)], start, end)
+        merged: dict[str, list] = {"time": [], "temperature_2m_max": [], "precipitation_sum": []}
+        for back in range(1, YEARS_BACK + 1):
+            s0, e0 = _years_earlier(start, back), _years_earlier(end, back)
+            if e0 > today - timedelta(days=7):     # the archive lags a few days behind
+                continue
+            key = (lat, lon, s0, e0)
+            if key not in _ARCHIVE:
+                try:
+                    r = session.get("https://archive-api.open-meteo.com/v1/archive", timeout=ARCHIVE_TIMEOUT_S, params={
+                        "latitude": lat, "longitude": lon, "timezone": "auto",
+                        "daily": "temperature_2m_max,precipitation_sum",
+                        "start_date": s0.isoformat(), "end_date": e0.isoformat()})
+                    r.raise_for_status()
+                    _ARCHIVE[key] = r.json().get("daily", {})
+                except Exception as e:  # noqa: BLE001 — one missing year still leaves an average
+                    log.warning("weather archive %s,%s %s failed: %s", lat, lon, s0.year, e)
+                    continue
+            for k in merged:
+                merged[k] += _ARCHIVE[key].get(k, [])
+        return summarize_climate(merged, start, end)
     except Exception as e:  # noqa: BLE001 — weather is optional decoration
         log.warning("weather failed for %s,%s: %s", lat, lon, e)
         return None

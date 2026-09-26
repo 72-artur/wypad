@@ -15,7 +15,7 @@ Przed budową sprawdziłem 3 obszary: źródła lotów, źródła noclegów oraz
 | Bagaż | **Szacunek:** środek oficjalnego cennika Ryanair × kurs EUR z NBP | Dokładne ceny (taryfy Regular i Plus przez `FareOptions`) wymagają zapytania o dostępność z `ToUs=AGREED`, czyli akceptacji regulaminu w imieniu Artura. **Artur się nie zgodził.** | `FareOptions` po ewentualnej zgodzie |
 | Noclegi | **trivago MCP**, 3 warianty zapytania na termin | Bez klucza. Cena za cały pobyt dla 2 osób w PLN, ocena, gwiazdki, współrzędne, zdjęcie i link z datami i 2 dorosłymi. [Z] | SerpApi Google Hotels (250 wyszukiwań/mies. za darmo, klucz) |
 | Linki do zakupu | ryanair.com (trasa, daty, 2 dorosłych), trivago (oferta w pokazanej cenie), Booking.com (wyszukanie obiektu z datami i 2 dorosłymi) | Wszystkie formaty sprawdzone w przeglądarce. [Z] | Google Flights (link `tfs`) jako porównanie |
-| Pogoda | Open-Meteo | Darmowe, bez klucza. Prognoza do ~2 tygodni, dalej średnia z 5 lat. [Z] | — |
+| Pogoda | Open-Meteo | Darmowe, bez klucza. Prognoza do ~2 tygodni, dalej średnia z tych samych dni w 3 poprzednich latach. [Z] | — |
 | Hosting | **GitHub Actions + GitHub Pages** (publiczne repo) | 0 zł, codzienny cron, sekrety, własna domena HTTPS (warunek PWA), publiczne linki do ofert. [C] | Mac + launchd (gdy GitHub będzie blokowany przez źródła); Cloud Run z kredytów Google AI Pro |
 | Powiadomienia | ntfy (push) + e-mail SMTP (Gmail albo iCloud Mail) | Wybór Artura; żadne nie wymaga serwera. | Telegram, Pushover |
 

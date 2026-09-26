@@ -12,6 +12,10 @@ on:
         description: "Szukaj od nowa, nawet jeśli dzisiejsze okazje już są"
         type: boolean
         default: false
+      notify:
+        description: "Wyślij powiadomienia (push i e-mail)"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -75,7 +79,9 @@ jobs:
         uses: actions/deploy-pages@v5
 
       - name: Wyślij powiadomienia
-        if: steps.live.outputs.done != 'true'
+        # Cron wysyła zawsze; przy ręcznym uruchomieniu decyduje pole „Wyślij powiadomienia”.
+        # (Nie `inputs.notify != false`: w wyrażeniach GitHuba null i false są sobie równe.)
+        if: steps.live.outputs.done != 'true' && (github.event_name != 'workflow_dispatch' || inputs.notify)
         working-directory: pipeline
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}

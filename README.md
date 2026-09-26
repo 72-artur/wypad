@@ -58,6 +58,8 @@ Każdy kanał jest opcjonalny: bez sekretu po prostu się nie wysyła.
 Otwórz adres aplikacji w Safari → **Udostępnij → Do ekranu początkowego**.
 
 ## Zmiana ustawień
+**Nowe miasto?** Dopisz je w `pipeline/wypad/destinations.py`, a potem u siebie uruchom `.venv/bin/python -m wypad climate --state ../state` (w katalogu `pipeline`) i zrób commit `state/climate.json`. Średni klimat miast liczymy lokalnie, bo archiwum pogody nie odpowiada serwerom GitHuba.
+
 Parametry wyszukiwania są w `pipeline/wypad/config.py`: lotniska, liczba nocy, horyzont, domyślny budżet i bagaż, minimalna ocena noclegu, maksymalna odległość od centrum, liczba wyszukiwań noclegów dziennie. Lista kierunków i dojazdy z lotnisk: `pipeline/wypad/destinations.py`. Godzina uruchomienia: `cron` w `.github/workflows/daily.yml` (czas UTC).
 
 ## Praca lokalna

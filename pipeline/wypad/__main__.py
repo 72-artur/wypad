@@ -23,6 +23,8 @@ def main(argv: list[str] | None = None) -> int:
     ps.add_argument("--force", action="store_true", help="szukaj od nowa (domyślne zachowanie; flaga dla czytelności workflow)")
     pn = sub.add_parser("notify", help="wyślij push i e-mail z dzisiejszymi okazjami")
     pn.add_argument("--site", type=Path, required=True)
+    pc = sub.add_parser("climate", help="zbuduj/uzupełnij miesięczny klimat miast (uruchamiaj lokalnie)")
+    pc.add_argument("--state", type=Path, required=True)
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -44,6 +46,14 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         print(f"OK: {len(payload['deals'])} okazji, {payload['stats']['flight_options']} kombinacji lotów, "
               f"{payload['stats']['duration_s']} s")
+        return 0
+
+    if args.cmd == "climate":
+        from .destinations import CITIES
+        from .run import WARSAW
+        from .weather import build_climate
+        cache = build_climate(args.state, CITIES, datetime.now(WARSAW).date())
+        print(f"Klimat: {sum(1 for k in CITIES if k in cache)}/{len(CITIES)} miast w {args.state / 'climate.json'}")
         return 0
 
     data = read_json(args.site / "data" / "deals.json")

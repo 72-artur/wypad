@@ -18,7 +18,7 @@ from .select import build_candidates, shortlist, typical_fares
 from .sources.ryanair import Ryanair, booking_url as ryanair_booking_url
 from .sources.trivago import Trivago, booking_city_url, booking_search_url, pick_stays
 from .trip import is_weekend_trip, trip_labels
-from .weather import trip_weather
+from .weather import Weather
 
 log = logging.getLogger(__name__)
 WARSAW = ZoneInfo("Europe/Warsaw")
@@ -126,7 +126,7 @@ MAX_FAILURE_SHARE = 0.5   # above this share of failed requests the run publishe
 
 
 def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanair=None, trivago=None,
-           weather_fn=trip_weather, rate: tuple[float, str] | None = None, now: datetime | None = None) -> dict:
+           weather_fn=None, rate: tuple[float, str] | None = None, now: datetime | None = None) -> dict:
     """Runs the whole daily search and publishes the site files. Raises RuntimeError — and publishes
     nothing, so yesterday's deals stay online — when a source is down or mostly failing."""
     s = s or Settings()
@@ -152,6 +152,8 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
     log.info("candidates: %d, shortlisted for hotels: %d", len(cands), len(picked))
 
     tv = trivago or Trivago()
+    wx = Weather(state_dir) if weather_fn is None else None
+    get_weather = weather_fn or wx.trip
     deals, stay_errors, no_stay, weather_ok = [], 0, 0, 0
     for c in picked:
         try:
@@ -165,7 +167,7 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
             no_stay += 1
             log.info("no eligible stay for %s %s", c["city"]["name"], c["check_in"])
             continue
-        weather = weather_fn(c["city"]["lat"], c["city"]["lon"], c["check_in"], c["check_out"], today)
+        weather = get_weather(c["city"]["key"], c["city"]["lat"], c["city"]["lon"], c["check_in"], c["check_out"], today)
         weather_ok += weather is not None
         deals.append(assemble(c, stays, weather, s, today, now.isoformat(timespec="minutes")))
 
@@ -202,5 +204,7 @@ def search(site_dir: Path, state_dir: Path, s: Settings | None = None, *, ryanai
     publish(site_dir, payload, site_url=s.site_url, bag=s.default_bag, bag_label=BAG_OPTIONS[s.default_bag]["short"],
             keep_days=s.archive_days)
     history.save_fares(state_dir, stored, today_typical, today)
+    if wx:
+        wx.save()
     log.info("published %d deals in %ss", len(deals), payload["stats"]["duration_s"])
     return payload

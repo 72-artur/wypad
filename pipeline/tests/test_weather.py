@@ -1,7 +1,9 @@
+import json
 from datetime import date
 
-from wypad import weather
-from wypad.weather import _same_season, describe, summarize_climate, summarize_forecast, trip_weather
+from wypad.weather import Weather, build_climate, climate_summary, describe, monthly_climate, summarize_forecast
+
+TODAY = date(2026, 9, 25)
 
 
 def test_describe_and_forecast_summary():
@@ -11,21 +13,22 @@ def test_describe_and_forecast_summary():
     assert summarize_forecast({"temperature_2m_max": []}) is None
 
 
-def test_climate_summary_uses_same_calendar_days_of_past_years():
-    daily = {"time": ["2024-11-13", "2024-11-14", "2024-11-20", "2025-11-13", "2025-11-14"],
-             "temperature_2m_max": [18, 20, 30, 19, 21], "precipitation_sum": [0, 2.0, 0, 0, 5.0]}
-    s = summarize_climate(daily, date(2026, 11, 13), date(2026, 11, 16))
-    assert s["t_max"] == 20 and "deszcz w 50% dni" in s["text"]     # the 20 Nov day is outside the window
-    assert _same_season(date(2025, 1, 2), date(2026, 12, 30), date(2027, 1, 3))   # window across New Year
+def test_monthly_climate_needs_20_days_and_counts_wet_days():
+    days = [f"2025-11-{d:02d}" for d in range(1, 31)] + [f"2025-12-{d:02d}" for d in range(1, 11)]
+    daily = {"time": days, "temperature_2m_max": [15] * 20 + [17] * 10 + [5] * 10,
+             "precipitation_sum": [0] * 15 + [2.0] * 15 + [0] * 10}
+    assert monthly_climate(daily) == {"11": {"t_max": 16, "wet_pct": 50}}          # December has only 10 days
+    assert climate_summary({"t_max": 16, "wet_pct": 50}) == {
+        "kind": "climate", "t_max": 16, "text": "średnio o tej porze, deszcz w 50% dni", "icon": "cloud-rain"}
 
 
 class FakeSession:
-    def __init__(self, fail_years=()):
-        self.calls, self.fail_years = [], set(fail_years)
+    def __init__(self, fail=False):
+        self.calls, self.fail = [], fail
 
     def get(self, url, timeout, params):
-        self.calls.append((url, params.get("start_date"), params.get("end_date"), timeout))
-        fail = params.get("start_date", "")[:4] in self.fail_years
+        self.calls.append((url, params.get("start_date"), params.get("end_date")))
+        fail = self.fail
 
         class R:
             def raise_for_status(self):
@@ -33,40 +36,54 @@ class FakeSession:
                     raise OSError("read timed out")
 
             def json(self):
-                start = params["start_date"]
-                return {"daily": {"time": [start, start], "temperature_2m_max": [15, 17],
-                                  "precipitation_sum": [0, 3.0], "weather_code": [0, 0]}}
+                return {"daily": {"time": [f"2025-10-{d:02d}" for d in range(1, 31)], "temperature_2m_max": [20] * 30,
+                                  "precipitation_sum": [0] * 30, "weather_code": [0] * 30,
+                                  "precipitation_probability_max": [0] * 30}}
         return R()
 
 
 def test_near_trips_use_the_forecast():
-    weather._ARCHIVE.clear()
     s = FakeSession()
-    w = trip_weather(1.0, 2.0, date(2026, 10, 1), date(2026, 10, 4), date(2026, 9, 25), session=s)
+    w = Weather(None, session=s).trip("barcelona", 1.0, 2.0, date(2026, 10, 1), date(2026, 10, 4), TODAY)
     assert w["kind"] == "forecast" and [c[0] for c in s.calls] == ["https://api.open-meteo.com/v1/forecast"]
 
 
-def test_far_trips_use_small_windows_of_the_last_three_years_and_cache_them():
-    weather._ARCHIVE.clear()
+def test_cached_climate_needs_no_network(tmp_path):
+    (tmp_path / "climate.json").write_text(json.dumps({"barcelona": {"10": {"t_max": 22, "wet_pct": 20}}}))
+    s = FakeSession(fail=True)
+    w = Weather(tmp_path, session=s).trip("barcelona", 1.0, 2.0, date(2026, 10, 20), date(2026, 10, 23), TODAY)
+    assert w["t_max"] == 22 and s.calls == []
+
+
+def test_missing_city_is_fetched_once_and_saved(tmp_path):
     s = FakeSession()
-    today = date(2026, 9, 25)
-    w = trip_weather(1.0, 2.0, date(2026, 10, 20), date(2026, 10, 22), today, session=s)
-    assert w["kind"] == "climate" and w["t_max"] == 16 and "deszcz w 50% dni" in w["text"]
-    assert [(c[1], c[2]) for c in s.calls] == [("2025-10-20", "2025-10-22"), ("2024-10-20", "2024-10-22"), ("2023-10-20", "2023-10-22")]
-    assert all(c[3] == weather.ARCHIVE_TIMEOUT_S for c in s.calls)
-    trip_weather(1.0, 2.0, date(2026, 10, 20), date(2026, 10, 22), today, session=s)   # same window → cached
-    assert len(s.calls) == 3
+    wx = Weather(tmp_path, session=s)
+    assert wx.trip("rzym", 1.0, 2.0, date(2026, 10, 20), date(2026, 10, 23), TODAY)["t_max"] == 20
+    wx.trip("rzym", 1.0, 2.0, date(2026, 10, 27), date(2026, 10, 30), TODAY)          # same city: from cache
+    assert [c[1:] for c in s.calls] == [("2023-01-01", "2025-12-31")]
+    wx.save()
+    assert json.loads((tmp_path / "climate.json").read_text())["rzym"]["10"]["t_max"] == 20
 
 
-def test_one_failed_year_still_gives_an_average_and_leap_day_is_safe():
-    weather._ARCHIVE.clear()
-    w = trip_weather(1.0, 2.0, date(2026, 10, 20), date(2026, 10, 22), date(2026, 9, 25), session=FakeSession(fail_years={"2024"}))
-    assert w is not None and w["kind"] == "climate"
-    assert weather._years_earlier(date(2028, 2, 29), 1) == date(2027, 2, 28)
+def test_archive_budget_stops_slow_lookups():
+    clock = iter([0, 100, 100, 100, 100]).__next__        # budget already spent at the first lookup
+    s = FakeSession()
+    wx = Weather(None, session=s, archive_budget_s=60, clock=clock)
+    assert wx.trip("praga", 1.0, 2.0, date(2026, 10, 20), date(2026, 10, 23), TODAY) is None
+    assert s.calls == []
 
 
-def test_weather_errors_are_swallowed():
-    class Boom:
-        def get(self, *a, **k):
-            raise OSError("timeout")
-    assert trip_weather(1.0, 2.0, date(2026, 10, 1), date(2026, 10, 4), date(2026, 9, 25), session=Boom()) is None
+def test_failures_are_not_retried_in_the_same_run():
+    s = FakeSession(fail=True)
+    wx = Weather(None, session=s)
+    assert wx.trip("porto", 1.0, 2.0, date(2026, 10, 20), date(2026, 10, 23), TODAY) is None
+    assert wx.trip("porto", 1.0, 2.0, date(2026, 11, 20), date(2026, 11, 23), TODAY) is None
+    assert len(s.calls) == 1
+
+
+def test_build_climate_skips_cached_cities(tmp_path):
+    (tmp_path / "climate.json").write_text(json.dumps({"a": {"01": {"t_max": 1, "wet_pct": 1}}}))
+    cities = {"a": ("A", "X", "XX", 1.0, 2.0, 100, ""), "b": ("B", "X", "XX", 3.0, 4.0, 100, "")}
+    s = FakeSession()
+    cache = build_climate(tmp_path, cities, TODAY, session=s, pause_s=0)
+    assert set(cache) == {"a", "b"} and len(s.calls) == 1

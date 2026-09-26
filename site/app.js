@@ -489,8 +489,8 @@ async function renderDeal(date, id) {
           ${bookFlight ? `<a class="btn btn-primary btn-block" href="${esc(bookFlight)}" target="_blank" rel="noopener">${icon('external-link')}Kup lot w ${esc(deal.flight.carrier)}</a>` : ''}
           ${compare ? `<a class="btn btn-ghost btn-block" href="${esc(compare)}" target="_blank" rel="noopener">Porównaj w Google Flights</a>` : ''}
         </div>
-        <p class="fineprint">${deal.flight.carrier_code === 'W6' ? 'Link otwiera wyszukiwarkę Wizz Air z tymi datami i lotniskami; sprawdź na stronie, czy ustawiło się 2 dorosłych.' : 'Link otwiera wyszukiwarkę przewoźnika z tymi datami, lotniskami i 2 dorosłymi.'} Bagaż dodajesz w trakcie rezerwacji.</p>
-        ${deal.flight.two_seats_confirmed === false ? `<p class="fineprint">${esc(deal.flight.carrier)} podaje w rozkładzie cenę za osobę, więc cena lotu to 2 × cena z rozkładu i nie ma gwarancji, że w tej taryfie zostały 2 miejsca. Godziny przylotu (~) są szacunkowe. Przy zakupie sprawdź, czy przewoźnik nie dolicza opłaty administracyjnej.</p>` : ''}
+        <p class="fineprint">${deal.flight.carrier_code === 'W6' ? 'Link otwiera wyszukiwarkę Wizz Air z tymi datami, lotniskami i 2 dorosłymi.' : 'Link otwiera wyszukiwarkę przewoźnika z tymi datami, lotniskami i 2 dorosłymi.'} Bagaż dodajesz w trakcie rezerwacji.</p>
+        ${deal.flight.two_seats_confirmed === false ? `<p class="fineprint">${esc(deal.flight.carrier)} podaje w rozkładzie cenę za osobę, więc cena lotu to 2 × cena z rozkładu i nie ma gwarancji, że w tej taryfie zostały 2 miejsca. Opłata administracyjna jest już w tej cenie. Godziny przylotu (~) są szacunkowe.</p>` : ''}
       </div>
     </section>
 

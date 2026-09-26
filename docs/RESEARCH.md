@@ -102,4 +102,8 @@ Jak omijamy znane pułapki:
 - **Ochrona przed CSRF:** pierwsze zapytanie w sesji ustawia ciasteczko `RequestVerificationToken`. Każde kolejne bez nagłówka `X-RequestVerificationToken` z jego wartością dostaje HTTP 400 „InvalidProtocol”. Tak robi też sama strona Wizz.
 - **`priceType: checkPrice`** oznacza cenę 0, czyli nieznaną. Takie dni pomijamy, podobnie jak dni z kilkoma lotami, bo rozkład nie mówi, którego lotu dotyczy cena.
 - **Bagaż Wizz:** WIZZ Priority 13–57,50 € za osobę za lot; walizka 20 kg 0–112,50 € (w szczycie 15.12–10.01: 2–122 €). Szacunek to środek zakresu.
-- **Link do rezerwacji:** `wizzair.com/pl-pl/booking/select-flight/{z}/{do}/{wylot}/{powrót}/2/0/0/null`. Trasa i daty się wypełniają; liczby pasażerów i listy lotów nie dało się sprawdzić automatyczną przeglądarką (ochrona Kasada).
+- **Link do rezerwacji:** `wizzair.com/pl-pl/booking/select-flight/{z}/{do}/{wylot}/{powrót}/2/0/0/null`. Automatyczna przeglądarka nie przeszła ochrony Kasada, ale **Artur sprawdził go ręcznie 26.09** na ofercie Wrocław–Kiszyniów 15–19.11:
+  - trasa, daty i „2 pasażerów” ustawione;
+  - koszyk Wizz: 296 zł za 2 osoby, dokładnie tyle, ile pokazuje aplikacja;
+  - **opłata administracyjna jest wliczona w cenę z rozkładu** (79 zł = 44 zł bilet + 35 zł opłaty za osobę);
+  - szacowane przyloty: tam ~18:45 wobec 18:40, powrót ~15:10 wobec 15:10 (numery lotów W4 4000 / W4 3999).

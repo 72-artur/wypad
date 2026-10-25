@@ -107,3 +107,8 @@ Jak omijamy znane pułapki:
   - koszyk Wizz: 296 zł za 2 osoby, dokładnie tyle, ile pokazuje aplikacja;
   - **opłata administracyjna jest wliczona w cenę z rozkładu** (79 zł = 44 zł bilet + 35 zł opłaty za osobę);
   - szacowane przyloty: tam ~18:45 wobec 18:40, powrót ~15:10 wobec 15:10 (numery lotów W4 4000 / W4 3999).
+
+## 6. Uzupełnienie 25.10.2026: trivago zmieniło format odpowiedzi [Z]
+- Od 23.10 trivago podaje ceny w liście `deals` (1–3 oferty różnych serwisów na obiekt), a nie w polach na górze obiektu. Link z datami i 2 dorosłymi oraz warunki (`breakfastIncluded`, `freeCancellation`, `roomOnly`, `nonRefundable`) ma tylko pierwsza, wyróżniona oferta.
+- W 7 z 12 sprawdzonych hoteli wyróżniona oferta **nie** była najtańsza. Bierzemy najtańszą, a link prowadzi do strony obiektu w trivago, gdzie widać wszystkie oferty.
+- Skutek przed poprawką: 23–25.10 żaden nocleg nie dał się odczytać, więc przebiegi kończyły się błędem bez publikacji i powiadomień (zgodnie z założeniem, by nie publikować ofert bez noclegu). Teraz taka sytuacja daje czytelny błąd „prawdopodobnie zmienił się format odpowiedzi”.

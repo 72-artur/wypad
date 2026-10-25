@@ -83,6 +83,7 @@ def assemble(c: dict, stays: list[dict], weather: dict | None, s: Settings, toda
         "reviews": o["reviews"], "distance_km": o["distance_km"], "image": o["image"], "amenities": o["amenities"],
         "price_total": o["price_total"], "price_night": o["price_night"], "provider": o["provider"],
         "book_url": o["trivago_url"], "booking_url": booking_search_url(f"{o['name']} {city['name']}", ci, co),
+        "breakfast": o.get("breakfast"), "free_cancellation": o.get("free_cancellation"),
     }
     return {
         # Ryanair ids stay as before (history, favourites); other carriers get a suffix so that the same

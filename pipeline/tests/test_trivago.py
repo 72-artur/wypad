@@ -125,3 +125,41 @@ def test_offers_survive_one_failed_variant_but_raise_when_all_fail():
     t._search = _FailingTrivago(fail_first_n=3)
     with pytest.raises(RuntimeError, match="all searches failed"):
         t.offers(*MILAN, CI, CO)
+
+
+NEW = json.loads((Path(__file__).parent / "fixtures" / "trivago_rome_3n_deals_format.json").read_text())["result"]["structuredContent"]["accommodations"]
+ROME = (41.8960, 12.4823)
+CI2, CO2 = date(2026, 11, 13), date(2026, 11, 16)
+
+
+def test_new_deals_format_from_2026_10_23_is_read():
+    """Real response after trivago moved prices into a list of offers per property (runs failed 23–25.10)."""
+    offers = [o for a in NEW if (o := normalize(a, *ROME, CI2, CO2))]
+    assert len(offers) == len(NEW)
+    for raw, o in zip(NEW, offers):
+        prices = [parse_pln(d["price_per_stay"]) for d in raw["deals"]]
+        assert o["price_total"] == min(prices)                      # the cheapest offer, not the featured one
+        assert o["provider"] == min(raw["deals"], key=lambda d: parse_pln(d["price_per_stay"]))["advertiser"]
+        assert "dr-20261113-20261116" in o["trivago_url"] and "rc-1-2" in o["trivago_url"]
+    assert pick_stays(offers, min_rating=8.0, max_km=3.0)           # Rome has eligible stays again
+
+
+def test_conditions_are_read_from_the_offer():
+    raw = {**NEW[0], "deals": [{"advertiser": "A", "price_per_stay": "900 zł", "currency": "PLN",
+                                "deal_url": "https://www.trivago.pl/pl/lm/hotel-x?search=dr-1;rc-1-2",
+                                "price_attributes": [{"id": "breakfastIncluded"}, {"id": "freeCancellation"}]},
+                               {"advertiser": "B", "price_per_stay": "1 200 zł", "currency": "PLN"}]}
+    o = normalize(raw, *ROME, CI2, CO2)
+    assert (o["price_total"], o["provider"], o["breakfast"], o["free_cancellation"]) == (900, "A", True, True)
+    raw["deals"][0]["price_attributes"] = [{"id": "roomOnly"}, {"id": "nonRefundable"}]
+    o = normalize(raw, *ROME, CI2, CO2)
+    assert (o["breakfast"], o["free_cancellation"]) == (False, False)
+
+
+def test_unreadable_format_is_reported_as_such():
+    import pytest
+    from wypad.sources.trivago import Trivago
+    t = Trivago()
+    t._search = lambda args: [{"accommodation_id": "x", "accommodation_name": "Hotel", "prices": {"total": 1}}]
+    with pytest.raises(RuntimeError, match="zmienił się format"):
+        t.offers(*ROME, CI2, CO2)

@@ -149,13 +149,49 @@ class Trivago:
                 failures.append(f"{type(e).__name__}: {e}")
         if len(failures) == len(variants):
             raise RuntimeError(f"trivago: all searches failed ({failures[0]})")
-        return [o for a in seen.values() if (o := normalize(a, lat, lon, check_in, check_out))]
+        offers = [o for a in seen.values() if (o := normalize(a, lat, lon, check_in, check_out))]
+        if seen and not offers:
+            # Properties came back but none could be read: the response format changed (as on 2026-10-23).
+            raise RuntimeError(f"trivago: nie rozpoznano żadnego z {len(seen)} obiektów — prawdopodobnie "
+                               "zmienił się format odpowiedzi (sprawdź wypad/sources/trivago.py)")
+        return offers
+
+
+def _https(u) -> str | None:
+    return u if str(u or "").startswith("https://") else None
+
+
+def best_deal(a: dict) -> dict | None:
+    """Price, advertiser, link and conditions of the cheapest offer for a property.
+
+    Since 2026-10-23 trivago lists 1–3 offers per property under "deals"; only the first (featured) one
+    carries the link and the conditions, and in 7 of 12 checked hotels it was NOT the cheapest. The link
+    of the featured offer is trivago's page for the property with our dates and 2 adults, which lists all
+    offers, so it is used for any of them. Before that the price sat at the top level ("price_per_stay")."""
+    deals = a.get("deals")
+    if isinstance(deals, list) and deals:
+        priced = [d for d in deals if parse_pln(d.get("price_per_stay")) and d.get("currency") in (None, "PLN")]
+        if not priced:
+            return None
+        cheapest = min(priced, key=lambda d: parse_pln(d["price_per_stay"]))
+        featured = deals[0]
+        attrs = {pa.get("id") for pa in (cheapest.get("price_attributes") or [])}
+        return {"total": parse_pln(cheapest["price_per_stay"]), "provider": cheapest.get("advertiser"),
+                "url": _https(cheapest.get("deal_url")) or _https(featured.get("deal_url")) or _https(a.get("accommodation_url")),
+                "breakfast": True if "breakfastIncluded" in attrs else (False if "roomOnly" in attrs else None),
+                "free_cancellation": True if "freeCancellation" in attrs else (False if "nonRefundable" in attrs else None)}
+    total = parse_pln(a.get("price_per_stay"))                          # format until 2026-10-22
+    if not total or a.get("currency") not in (None, "PLN"):
+        return None
+    return {"total": total, "provider": a.get("advertisers"), "url": _https(a.get("accommodation_url")),
+            "breakfast": None, "free_cancellation": None}
 
 
 def normalize(a: dict, lat: float, lon: float, check_in: date, check_out: date) -> dict | None:
-    total = parse_pln(a.get("price_per_stay"))
-    if not total or a.get("currency") not in (None, "PLN"):
+    deal = best_deal(a)
+    if not deal:
         return None
+    total = deal["total"]
     nights = (check_out - check_in).days
     try:
         rating = float(a["review_rating"]) if a.get("review_rating") else None
@@ -165,7 +201,7 @@ def normalize(a: dict, lat: float, lon: float, check_in: date, check_out: date) 
     name = (a.get("accommodation_name") or "").strip()
     dist = (round(haversine_km(lat, lon, a["latitude"], a["longitude"]), 1)
             if a.get("latitude") is not None and a.get("longitude") is not None else None)
-    url = a.get("accommodation_url") if str(a.get("accommodation_url", "")).startswith("https://") else None
+    url = deal["url"]
     ptype = property_type(url, name)
     apartment = ptype in ("Apartament", "Aparthotel") or (ptype is None and bool(APARTMENT_WORDS.search(name)))
     hostel = ptype in ("Hostel", "Kemping") or bool(HOSTEL_WORDS.search(name))
@@ -192,8 +228,10 @@ def normalize(a: dict, lat: float, lon: float, check_in: date, check_out: date) 
         "amenities": [x.strip() for x in (a.get("top_amenities") or "").split(",") if x.strip()][:6],
         "price_total": total,
         "price_night": round(total / max(nights, 1)),
-        "provider": a.get("advertisers") or None,
+        "provider": deal["provider"] or None,
         "trivago_url": url,
+        "breakfast": deal["breakfast"],
+        "free_cancellation": deal["free_cancellation"],
     }
 
 

@@ -1,0 +1,564 @@
+{
+ "result": {
+  "structuredContent": {
+   "accommodations": [
+    {
+     "accommodation_id": "100-10685408",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Albergo Etico Roma",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "9.6",
+     "review_count": "2,340",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Klimatyzacja, Restauracja, Bar hotelowy",
+     "latitude": 41.91453170776367,
+     "longitude": 12.472769737243652,
+     "distance": "Rzym, 1,8 km do: Centrum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/f2/24/4ebe2dbaf62ba590c9c7dddba8f3e4139c0291b693bc77957e114cd71711",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "720 zł",
+       "price_per_stay": "2 159 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-albergo-etico-roma-rzym?cip=234716015&currencyCode=PLN&search=100-10685408%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=C8OzKYgDdvvJ9Er0RIMkkrsfnUXFS1gGmppdI9HnfOvf0ktAo1dvZjFHK8arbfwQ4At9%2FpEwq6ibDs1AByc0h%2BqRawd1ScRM5jpKbcf0CCa6eAD6vtSxHYx0mDEOr1J198tFu83qp%2BLh7JOpAZ95GARmczpzbcB7QIknrqTuDX67vFvUh9JKdGkLm0FSARwp&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "breakfastIncluded",
+         "name": "Ze śniadaniem"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "sembo",
+       "price_per_night": "898 zł",
+       "price_per_stay": "2 693 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "trivago DEALS",
+       "price_per_night": "755 zł",
+       "price_per_stay": "2 265 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-17346",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Oceania",
+     "hotel_rating": 2,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "9.1",
+     "review_count": "3,065",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Parking, Klimatyzacja, Bar hotelowy",
+     "latitude": 41.90324020385742,
+     "longitude": 12.493180274963379,
+     "distance": "1,5 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/66/a7/0e7825c167a8861fd40d7f032dfa2cd34f1d265911eb765958934fbf6993",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "614 zł",
+       "price_per_stay": "1 842 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-oceania-rzym?cip=234716015&currencyCode=PLN&search=100-17346%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=VMDfy51Wt0eenfdATcODB4h1mB4HW9sSDPfi9L4R7%2FvNXXgDFHnyueX6XKZrNQBBN94MDWx7HBavg1OYzNh6sCD50RustqRwScUW3KzCiyldNKnovselWoqJ2r8wPhyxTwqye1%2FE6AJpZiNcIswPIdc%2FUepTSCyAe6Y8lYY4l2c11Rr4ZCdoIZqYlAbP&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "Super.com",
+       "price_per_night": "604 zł",
+       "price_per_stay": "1 812 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Stayforlong",
+       "price_per_night": "683 zł",
+       "price_per_stay": "2 049 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-17085",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Varese",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.9",
+     "review_count": "3,871",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Przyjazny zwierzętom, Klimatyzacja",
+     "latitude": 41.90311050415039,
+     "longitude": 12.505359649658203,
+     "distance": "1,8 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/01/1b/d2a633b8eab772638cbd87f335388b9987a8004b1b6af94996575f137630",
+     "deals": [
+      {
+       "advertiser": "Strona hotelu",
+       "price_per_night": "695 zł",
+       "price_per_stay": "2 085 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-varese-rzym?cip=234716015&currencyCode=PLN&search=100-17085%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=F8e8dgtgMhiOxt2FOUXmLwequ8pjXCOoVDZxrsy4cRHEJAwR2Expm5MXsDudmvHnrsPbahsAwME%2F8Q9T51YTJkFv0r3WxuDEsaYrIiHSwHkuqxFcen6ePJetHk5u3PhpmDKYnE1kDNSCvyDe44P5dIw1g%2Bbp%2BxBZ45k6nL7xusvlX3qPI7mYb4v7en6wzLxD&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "breakfastIncluded",
+         "name": "Ze śniadaniem"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "743 zł",
+       "price_per_stay": "2 229 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "sembo",
+       "price_per_night": "882 zł",
+       "price_per_stay": "2 647 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-81942",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Le Petit Real",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.4",
+     "review_count": "999",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Parking, Klimatyzacja",
+     "latitude": 41.89931106567383,
+     "longitude": 12.498379707336426,
+     "distance": "1,2 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/45/f1/045b8dd90bac2f9cc5636551783b36a8da3c690130be47558c38914111f8",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "688 zł",
+       "price_per_stay": "2 063 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-le-petit-real-rzym?cip=234716015&currencyCode=PLN&search=100-81942%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=jF8rvIdWzA43pfsq0K27j6EAmxTP2CZaMLUWq%2BS%2FeOC1vJMmUY9os%2BHuEyU2AqyFGeiIWVi25V5VjlEpxwEtPUMo4YV8vd4dfe2t2E0YMkje8KkbJDTEXrdqIg%2BWRhP8A%2BJ33IVszb8bAXXKyUNOSKEAitR%2FBZMhE0tnN1DSdxGMH0KzZ6Flx4dDSE1fIGw%3D&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "freeCancellation",
+         "name": "Bezpłatne anulowanie"
+        }
+       ]
+      },
+      {
+       "advertiser": "Super.com",
+       "price_per_night": "646 zł",
+       "price_per_stay": "1 939 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Agoda",
+       "price_per_night": "688 zł",
+       "price_per_stay": "2 063 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-25619884",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Camplus Hotel Roma Centro",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "9.0",
+     "review_count": "1,976",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Klimatyzacja, Bar hotelowy",
+     "latitude": 41.904598236083984,
+     "longitude": 12.49901008605957,
+     "distance": "Rzym, 1,4 km do: Centrum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/d3/ea/d72ced4e97e9e4ea88b9ca35238a0508115371438e85ad41d434390be6d8",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "655 zł",
+       "price_per_stay": "1 964 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/camplus-hotel-roma-centro-rzym?cip=234716015&currencyCode=PLN&search=100-25619884%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=RAlbBAmZVUb90y%2B23rqtzpBLtCeIPSkhanFTxfXhySmWoXRfvqZrLKfw6RML8kUreXS6J9m5i%2FRHWSY%2FJ6CQAciYOwDuoBe9RJjIclb%2B%2BcpMAvmaqrU1rnC8WhxFS%2FUu%2FZQHiDEE%2BfDKNw%2BBxep1mWOw4QI6o5DOUOXSMT%2BqZXsQRquRexm4fFuU4wX7MA%3D%3D&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "lastminute.com",
+       "price_per_night": "603 zł",
+       "price_per_stay": "1 808 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "roomsXXL",
+       "price_per_night": "847 zł",
+       "price_per_stay": "2 542 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-8307502",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Ripetta Natural Suites",
+     "hotel_rating": 2,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.3",
+     "review_count": "1,743",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Spa, Parking, Przyjazny zwierzętom, Klimatyzacja, Bar hotelowy",
+     "latitude": 41.90816116333008,
+     "longitude": 12.475830078125,
+     "distance": "Rzym, 1,0 km do: Centrum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/53/b1/ce7c6693d89bfff744d1f46584995cfbb404dea20f63e17b98bf1d666dad",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "705 zł",
+       "price_per_stay": "2 116 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-ripetta-natural-suites-rzym?cip=234716015&currencyCode=PLN&search=100-8307502%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=17IGs5kGtvxBnecIdHrcPTwck6Z%2FZWDuUWKCiuWde1Xy8NQxhX%2FHd3lJSs1Al2I7pHl3py5%2FFYlxiAbhxHtZS9UsH4XxlPtnTxUHjIYIZ61NaxVgvMgxLKXM57SRhRcLJfKf580tsHdgJ748s28h9w0ppLRcr5fisTE%2FGZEUyJ2DdOk7Er0krPO21AzgsDJy%2FA%3D%3D&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "sembo",
+       "price_per_night": "1 236 zł",
+       "price_per_stay": "3 709 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Agoda",
+       "price_per_night": "756 zł",
+       "price_per_stay": "2 267 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-17302",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Miami",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.3",
+     "review_count": "6,186",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Parking, Przyjazny zwierzętom, Klimatyzacja",
+     "latitude": 41.90100860595703,
+     "longitude": 12.49330997467041,
+     "distance": "1,2 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/9d/16/b59eaac0cd6862d84c945f09f2f65df6d45f280305087c78ce77a4ebdd43",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "575 zł",
+       "price_per_stay": "1 725 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-miami-rzym?cip=234716015&currencyCode=PLN&search=100-17302%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=L22Wje1vzdfZhL2YOaNs7FYwkPGcetnY9MVd5ep6KTvXtnUHlf8BMHVerZf4Jm8P2bPN9mn3zE%2FAzClqNFgGCW%2FonrQBn3SLLgXpbsFvKN0V90j4bBNDec%2ByQ%2BGmJz10l4z33BQt05nm0GTI%2B5y4WaZ78lmOjkhCfJTe1azvZD%2BWDQSHKPuYX%2Bgee5RcmOqM&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "Logitravel",
+       "price_per_night": "555 zł",
+       "price_per_stay": "1 664 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "trivago DEALS",
+       "price_per_night": "771 zł",
+       "price_per_stay": "2 313 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-41900108",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "ACA Hotel Viminale",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "9.3",
+     "review_count": "1,682",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Klimatyzacja",
+     "latitude": 41.89958953857422,
+     "longitude": 12.492939949035645,
+     "distance": "Rzym, 0,8 km do: Centrum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/9a/4b/7cd2acddc487ee722682325f4f9383b5f31a764a91ca47096d81419eeaba",
+     "deals": [
+      {
+       "advertiser": "Trip.com",
+       "price_per_night": "805 zł",
+       "price_per_stay": "2 414 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/aca-hotel-viminale-rzym?cip=234716015&currencyCode=PLN&search=100-41900108%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=hMXHAP1E5S%2FLPuElaE0HxXwTU7paSggTUDpqrEpu9Hp4DgosGMlKRboyxlNfCZrN94pMCObKSjMJg97q70%2FLp%2FG1YNqBIQikPV6W%2FOgtMXXHvbWyyWKHe5mDZUpLayDzewGmgOk2Zo8cjIdQuRxT7FnGmbva3oq%2B6sUtMumlVcIk0cEX6G4E1o9vtXB2ef36Gi4%3D&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "925 zł",
+       "price_per_stay": "2 775 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Agoda",
+       "price_per_night": "925 zł",
+       "price_per_stay": "2 775 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-16828",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Aberdeen",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.4",
+     "review_count": "3,508",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Parking, Klimatyzacja, Bar hotelowy",
+     "latitude": 41.90258026123047,
+     "longitude": 12.494000434875488,
+     "distance": "1,4 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/40/09/493e93910fe017e0045df1657b7ca49e7747cb580137284663a5398569b1",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "640 zł",
+       "price_per_stay": "1 921 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-aberdeen-rzym?cip=234716015&currencyCode=PLN&search=100-16828%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=S4XgPDhnwiHITjOXeeeosntYbJEgbCoYlMw%2FGWzTnc7OjmZbM8iHVNb34bb%2B6m4a1i9afAZs9Td2XF5OScqkB9uSm6lbuhQ4SyShQiuiT3Ev8f7WIYYEn9M4InISfHzgz8TbX6CN%2B1ruc%2FHAziOonADp9GlRCeP5cEIerSVPdBZjfBYdDNjtm1d0t8uTF2vk&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "lastminute.com",
+       "price_per_night": "601 zł",
+       "price_per_stay": "1 804 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Stayforlong",
+       "price_per_night": "722 zł",
+       "price_per_stay": "2 165 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-17334",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Navona",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.7",
+     "review_count": "5,277",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Klimatyzacja, Restauracja, Bar hotelowy",
+     "latitude": 41.89788818359375,
+     "longitude": 12.474749565124512,
+     "distance": "1,5 km do: St Peters Basilica",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/53/4c/521b0929287fe391f7df696b8f8614b370318b45d4177209a40362479848",
+     "deals": [
+      {
+       "advertiser": "Strona hotelu",
+       "price_per_night": "812 zł",
+       "price_per_stay": "2 435 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-navona-rzym?cip=234716015&currencyCode=PLN&search=100-17334%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=3H3k1plmUn0mMpqMo34hAIOPsQG1%2B5HYMQ1UW3q%2BVLxWJYqsus%2FbE8%2FTdraaYehfFDLuV2oPj8swjsDliYr3dNol7JT3QyABKX3173yJi9Io69qXpxs0b%2BGtmykOV%2FibYsRBugBmn7BDpydHEG2vX2hKMs8B9sT4gdozVV8E%2Bwea8zZoHxDw54x%2B64pM4taL3A%3D%3D&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "ZenHotels.com",
+       "price_per_night": "741 zł",
+       "price_per_stay": "2 222 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "780 zł",
+       "price_per_stay": "2 340 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-16955",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Hotel Cecil",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.5",
+     "review_count": "1,504",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach",
+     "latitude": 41.904510498046875,
+     "longitude": 12.4856595993042,
+     "distance": "1,7 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/a3/90/ef5172a8780b458b6e0152901b962ae24a06ca9337ed97c9137ad2e933e1",
+     "deals": [
+      {
+       "advertiser": "Strona hotelu",
+       "price_per_night": "778 zł",
+       "price_per_stay": "2 333 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-cecil-rzym?cip=234716015&currencyCode=PLN&search=100-16955%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=K%2BFzu2%2BwwqA%2FW8RYJW9TwJmEpPz7pmlOPRpxQMscI89Z9FJgI6LV11QQX6%2FDnb65k2UOO4%2FTV09nzji4h%2F7bBHXI9zRVNLh17cd8tjPSs2rNZtoYtwlEHT%2Frm1OB5Adh9JwZQF8vunqte%2FMN6qHdltKsJ4xUwC9ok4DPz%2Fdo3rq%2FiRrVaVq7mtIEAYi9iitF&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "roomOnly",
+         "name": "Bez śniadania"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        },
+        {
+         "id": "payAtProperty",
+         "name": "Zapłać w obiekcie"
+        }
+       ]
+      },
+      {
+       "advertiser": "Agoda",
+       "price_per_night": "1 028 zł",
+       "price_per_stay": "3 083 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "Trip.com",
+       "price_per_night": "986 zł",
+       "price_per_stay": "2 957 zł",
+       "currency": "PLN"
+      }
+     ]
+    },
+    {
+     "accommodation_id": "100-2133232",
+     "arrival": "2026-11-13",
+     "departure": "2026-11-16",
+     "accommodation_name": "Dulcis In Fundo",
+     "hotel_rating": 3,
+     "country_city": "Rzym, Włochy",
+     "review_rating": "8.4",
+     "review_count": "765",
+     "top_amenities": "Wi-Fi w lobby, Wi-Fi w pokojach, Parking, Klimatyzacja",
+     "latitude": 41.88507843017578,
+     "longitude": 12.471030235290527,
+     "distance": "1,8 km do: Muzeum Colosseum",
+     "main_image": "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/partner-images/60/37/2ccf81d6e915a5f6ec35d41ca5eb1413e81d319c9bbd1a47282ac5219bb9",
+     "deals": [
+      {
+       "advertiser": "Booking.com",
+       "price_per_night": "599 zł",
+       "price_per_stay": "1 797 zł",
+       "currency": "PLN",
+       "deal_url": "https://www.trivago.pl/pl/lm/hotel-dulcis-in-fundo-rzym?cip=234716015&currencyCode=PLN&search=100-2133232%3B105-1316%3B105-1318%3B106-1527%3Bdr-20261113-20261116%3Bdrs-40%3Brc-1-2&cds=qE%2FzLGkxxX0IjWKPl6EfsuWvwKPLCwOro7Gx%2F4Be8k7v3wnWy6mDVPyeU0B1mt%2F79cT8Q9OdLMKNpFBC6K7U7r4VgXCYvqe7XjaXtICsCg2YBfe6Q%2FJWTcAuX7FcHRoM6TNmnYZSdSN54X8ZFs%2BTj%2BZGnFx2k7W9CA99fc%2BN4AEgf%2BbSDi9kdPcyJp0J5SNF&cdsOrigin=DEAL_ON_DEALFINDER",
+       "price_attributes": [
+        {
+         "id": "breakfastIncluded",
+         "name": "Ze śniadaniem"
+        },
+        {
+         "id": "nonRefundable",
+         "name": "Oferta bezzwrotna"
+        }
+       ]
+      },
+      {
+       "advertiser": "Super.com",
+       "price_per_night": "594 zł",
+       "price_per_stay": "1 783 zł",
+       "currency": "PLN"
+      },
+      {
+       "advertiser": "trivago DEALS",
+       "price_per_night": "761 zł",
+       "price_per_stay": "2 283 zł",
+       "currency": "PLN"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
